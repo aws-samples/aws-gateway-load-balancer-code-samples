@@ -6,8 +6,8 @@ This is a respository for code examples to help accelerate your development of
 AWS Gateway Load Balancer (GWLB). The repository is organized by programming language or technology:
 
 * [AWS CloudFormation](aws-cloudformation/)
-* [AWS SDK for Python (Boto3)](https://code.amazon.com/packages/WsSampleCode/trees/aws-code-sample-for-aws-gwlb/--/python)
-* [AWS SDK for Go](https://code.amazon.com/packages/WsSampleCode/trees/aws-code-sample-for-aws-gwlb/--/go)
+* [AWS SDK for Python (Boto3)](python/)
+* [AWS SDK for Go](go/)
 
 ### Note:
 
