@@ -1,17 +1,18 @@
-* Following example shows how to create Gateway Load Balancer, target group and listener using AWS CloudFormation. It also registers targets with target group.
+* Following example shows how to create AWS Gateway Load Balancer, target group and listener using AWS CloudFormation. It also registers targets with target group.
 
 ```yaml
 AWSTemplateFormatVersion: "2010-09-09"
 
 Description: >-
-  AWS CloudFormation Sample Template For Creating an AWS Gateway Load Balancer (GWLB).
+  AWS CloudFormation Sample Template for Gateway Load Balancer (GWLB).
   
   This template creates:
     - 1 GWLB
     - 1 Target group for GWLB 
     - 1 Listner for GWLB
+    - Register intance to target group assigned to GWLB
   
-  **WARNING**: This template creates an AWS GWLB. You will be billed
+  **WARNING** This template creates a Gateway Load Balancer You will be billed
   for the AWS resources used if you create a stack from this template.
 
 Metadata:
@@ -67,12 +68,12 @@ Parameters:
   TargetGroupName:
     Description: Target Group Name
     Type: String
-    Default: gwlb1-tg1
+    Default: tg1
     ConstraintDescription: Must be a valid target group name
   HealthProtocol:
     Description: >-
       The protocol the appliane gateway uses when performing health checks on
-      targets. For Application Load Balancers, the default is HTTP.
+      targets. The default is HTTP.
     Type: String
     Default: HTTP
     AllowedValues: ['TCP', 'HTTP', 'HTTPS']
@@ -80,8 +81,8 @@ Parameters:
   HealthPort:
     Description: >- 
       The port the load balancer uses when performing health checks
-      on targets. The default is traffic-port, which is the port on
-      which each target receives traffic from the load balancer.
+      on targets. For Gateway Load Balance specify port other then the
+      traffic port.
     Type: String
     Default: '80'
     ConstraintDescription: Must be a valid health check port
@@ -105,12 +106,6 @@ Resources:
       Name: !Ref GwlbName
       Type: gateway
       Subnets: !Ref GwlbSubnets
-      Tags:
-      - Key: Name
-        Value: !Join
-          - ""
-          - - !Ref AWS::StackName
-            - "-gwlb1"
 
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -125,7 +120,7 @@ Resources:
         Value: 20
       VpcId: !Ref VpcId
       TargetType: instance
-      Targets:
+      Targets: 
         - Id: !Ref Appliance1InstanceId
         - Id: !Ref Appliance2InstanceId
       Tags:

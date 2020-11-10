@@ -1,9 +1,9 @@
-* Following example shows how to vpc endpoint service using Gateway Load Balancer ARN using AWS CloudFormation. It also creates custom resource to output the service name.
+* Following example shows how to create VPC Endpoint Service using Gateway Load Balancer ARN using AWS CloudFormation. It also creates custom resource to output the service name.
 
 ```yaml
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: This template creates Amazon VPC Endpoint Service using ELB ARN
+Description: This template creates Amazon VPC Endpoint Service.
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -52,7 +52,6 @@ Parameters:
       Enter ARN of one or more prinicapls: IAM user, IAM roles and AWS accounts.
       To grant permissions to all principals, specify an asterisk (*).
     Type: String
-    Default: arn:aws:iam::558283194989:root
     ConstraintDescription: Must be a valid AWS ARN of one or more principals
 
 Resources:
@@ -158,10 +157,10 @@ Resources:
       Input: !Ref VpcEndpointService
 
 Outputs:
-  SpVpcEndpointServiceId:
-    Description: VPC Endpoint Service ID
+  SecurityVpcEndpointServiceId:
+    Description: Security VPC Endpoint Service ID
     Value: !Ref VpcEndpointService
-  SpVpcEndpointServiceName:
-    Description: VPC Endpoint Service Name. Required to create VPC Endpoint
+  SecurityVpcEndpointServiceName:
+    Description: Security VPC Endpoint Service Name. Required to create VPC endpoint
     Value: !GetAtt VpceServiceName.Data
 ```
