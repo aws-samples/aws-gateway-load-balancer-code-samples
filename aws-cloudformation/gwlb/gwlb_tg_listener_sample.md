@@ -1,4 +1,4 @@
-* Following example shows how to create Gateway Load Balancer, target group and listener using AWS CloudFormation. It also registers targets with target groups.
+* Following example shows how to create Gateway Load Balancer, target group and listener using AWS CloudFormation. It also registers targets with target group.
 
 ```yaml
 AWSTemplateFormatVersion: "2010-09-09"
@@ -149,5 +149,5 @@ Outputs:
     Value: !Ref Gwlb
   SpTgArn:
     Description: Service Provider Target Group ARN
-    Value: !Ref TargetGroup  
+    Value: !Ref TargetGroup
 ```
