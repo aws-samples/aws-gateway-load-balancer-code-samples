@@ -28,7 +28,7 @@ func main(){
 	elbv2Client := elbv2.New(sess)
 
 	tgArn := os.Args[1]
-	target1Id := os.Args[5]
+	target1Id := os.Args[2]
 
 	// Register Targets:
 	registerTargets, registerErr := elbv2Client.RegisterTargets(&elbv2.RegisterTargetsInput{

@@ -31,7 +31,8 @@ func main(){
 	vpcId := os.Args[2]
 	gwlbName := os.Args[3]
 	subnet1Id := os.Args[4]
-	target1Id := os.Args[5]
+	subnet2Id := os.Args[5]
+	target1Id := os.Args[6]
 
 	// Create target group
 	tg, tgErr := elbv2Client.CreateTargetGroup(&elbv2.CreateTargetGroupInput{
@@ -72,6 +73,7 @@ func main(){
 		Name: aws.String(gwlbName),
 		Subnets: []*string{
 			aws.String(subnet1Id),
+			aws.String(subnet2Id),
 		},
 		Tags: []*elbv2.Tag{
 			{

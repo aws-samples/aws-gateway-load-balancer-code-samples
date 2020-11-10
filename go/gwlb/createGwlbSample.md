@@ -23,12 +23,14 @@ func main() {
 
 	gwlbName := os.Args[1]
 	subnet1Id := os.Args[2]
+	subnet2Id := os.Args[3]	
 
 	// Specify the details of the GWLB that you want to create.
 	createGwlb, err := elbv2Client.CreateLoadBalancer(&elbv2.CreateLoadBalancerInput{
 		Name: aws.String(gwlbName),
 		Subnets: []*string{
 			aws.String(subnet1Id),
+			aws.String(subnet2Id),			
 		},
 		Tags: []*elbv2.Tag{
 			{
