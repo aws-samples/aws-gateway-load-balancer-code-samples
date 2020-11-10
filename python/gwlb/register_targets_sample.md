@@ -58,18 +58,18 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--tg_arn', required=True,
                         help='specify target group name', type=str)
-    parser.add_argument('--target_ids', nargs='+', required=True,
+    parser.add_argument('--target_id', required=True,
                         help='specify target ids')
 
     args = parser.parse_args()
     ############################
     # Define script variables:
     ############################
-    tg_name = args.tg_arn
-    target_ids = args.target_ids
+    tg_arn = args.tg_arn
+    target_id = args.target_id
     #############################
     # Register Targets:
-    register_targets(tg1[1], target_ids[0])
+    register_targets(tg_arn, target_id)
 
 
 if __name__ == '__main__':

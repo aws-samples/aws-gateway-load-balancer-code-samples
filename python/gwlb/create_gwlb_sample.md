@@ -55,9 +55,8 @@ def main():
     --subnet_ids: Subnet ids to be assocated with GWLB
 
     Usage:
-    ./create_gwlb.py \
-    --gwlb_name provider-gwlb1 \
-    --subnet_ids subnet-xxxx subnet-yyyy
+    ./create_gwlb.py --gwlb_name boto3-gwlb \
+    --subnet_ids 'subnet-0348ec3f4869e2a1f' 'subnet-04132654a0e466491'
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('--gwlb_name', required=True,
@@ -74,7 +73,8 @@ def main():
     #############################
     # GWLB:
     gwlb1 = create_gwlb(gwlb_name, subnet_ids)
-    print(f"GWLB ARN: {gwlb1[1]}")
+    gwlb1_arn = gwlb1[0]['LoadBalancers'][0]['LoadBalancerArn']
+    print(f"GWLB ARN: {gwlb1_arn}")
 
 if __name__ == '__main__':
     main()
