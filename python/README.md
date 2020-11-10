@@ -13,9 +13,9 @@ For more information about developing applications using Python and Boto3, see t
 * [Create Listener Sample](gwlb/create_listener_sample.md)
 * [Create GWLB, Target Group and Listener Sample](gwlb/create_gwlb_tg_listener_sample.md)
 * [Register Targets Sample](gwlb/register_targets_sample.md)
-* [Delete GWLB Sample](delete_gwlb_sample.md)
-* [Delete Target Group Sample](delete_tg_sample.md)
-* [Delete GWLB and Target Group Sample](delete_gwlb_tg_sample.md)
+* [Delete GWLB Sample](gwlb/delete_gwlb_sample.md)
+* [Delete Target Group Sample](gwlb/delete_tg_sample.md)
+* [Delete GWLB and Target Group Sample](gwlb/delete_gwlb_tg_sample.md)
 
 ### **VPC Endpoint Service:**
 
