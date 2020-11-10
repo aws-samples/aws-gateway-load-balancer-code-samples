@@ -1,0 +1,153 @@
+* Following example shows how to create Gateway Load Balancer, target group and listener using AWS CloudFormation. It also registers targets with target groups.
+
+```yaml
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: >-
+  AWS CloudFormation Sample Template For Creating an AWS Gateway Load Balancer (GWLB).
+  
+  This template creates:
+    - 1 GWLB
+    - 1 Target group for GWLB 
+    - 1 Listner for GWLB
+  
+  **WARNING**: This template creates an AWS GWLB. You will be billed
+  for the AWS resources used if you create a stack from this template.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: 'Gateway Load Balancer Configuration'
+        Parameters:
+          - GwlbName
+          - GwlbSubnets
+      - Label:
+          default: 'Target Group Configuration'
+        Parameters:
+          - TargetGroupName
+          - HealthPort
+          - HealthProtocol
+          - VpcId
+          - Appliance1InstanceId
+          - Appliance2InstanceId
+    ParameterLabels:
+      GwlbName:
+        default: Gateway Load Balancer Name
+      GwlbSubnets:
+        default: List of Subnet Ids for GWLB        
+      TargetGroupName:
+        default: Target Group Name
+      HealthPort:
+        default: Health Check Port
+      HealthProtocol:
+        default: Health Check Protocol
+      VpcId:
+        default: VPC Id for target group
+      Appliance1InstanceId:
+        default: Appliance 1 instance id
+      Appliance2InstanceId:
+        default: Appliance 2 instance id  
+
+Parameters:
+  GwlbName:
+    Description: >-
+      Gateway Load Balancer name. This name must be unique within your AWS 
+      account and can have a maximum of 32 alphanumeric characters and 
+      hyphens. A name cannot begin or end with a hyphen.
+    Type: String
+    Default: gwlb1
+    ConstraintDescription: Must be a valid GWLB Name
+  GwlbSubnets:
+    Description: >- 
+      List of subnets to associate with your GWLB.
+      (e.g., ['subnet-123a351e', subnet-456a351e])
+    Type: List<AWS::EC2::Subnet::Id>
+    ConstraintDescription: Must be a valid list of subnet ids
+  TargetGroupName:
+    Description: Target Group Name
+    Type: String
+    Default: gwlb1-tg1
+    ConstraintDescription: Must be a valid target group name
+  HealthProtocol:
+    Description: >-
+      The protocol the appliane gateway uses when performing health checks on
+      targets. For Application Load Balancers, the default is HTTP.
+    Type: String
+    Default: HTTP
+    AllowedValues: ['TCP', 'HTTP', 'HTTPS']
+    ConstraintDescription: Must be a valid health check protocol
+  HealthPort:
+    Description: >- 
+      The port the load balancer uses when performing health checks
+      on targets. The default is traffic-port, which is the port on
+      which each target receives traffic from the load balancer.
+    Type: String
+    Default: '80'
+    ConstraintDescription: Must be a valid health check port
+  VpcId:
+    Description: VPC Id to associate with target group. (e.g. vpc-a123baa3 )
+    Type: AWS::EC2::VPC::Id
+    ConstraintDescription: Must be a valid VPC Id
+  Appliance1InstanceId:
+    Description: Appliance1 instnace id to register with target group. (e.g. i-02aff411247212745 )
+    Type: AWS::EC2::Instance::Id
+    ConstraintDescription: Must be a valid EC2 instane id
+  Appliance2InstanceId:
+    Description: Appliance2 instnace id to register with target group. (e.g. i-02aff411247212745 )
+    Type: AWS::EC2::Instance::Id
+    ConstraintDescription: Must be a valid EC2 instane id
+
+Resources:
+  Gwlb:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Ref GwlbName
+      Type: gateway
+      Subnets: !Ref GwlbSubnets
+      Tags:
+      - Key: Name
+        Value: !Join
+          - ""
+          - - !Ref AWS::StackName
+            - "-gwlb1"
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Ref TargetGroupName
+      Port: 6081
+      Protocol: GENEVE
+      HealthCheckPort: !Ref HealthPort
+      HealthCheckProtocol: !Ref HealthProtocol
+      TargetGroupAttributes:
+      - Key: deregistration_delay.timeout_seconds
+        Value: 20
+      VpcId: !Ref VpcId
+      TargetType: instance
+      Targets:
+        - Id: !Ref Appliance1InstanceId
+        - Id: !Ref Appliance2InstanceId
+      Tags:
+      - Key: Name
+        Value: !Join
+          - ""
+          - - !Ref AWS::StackName
+            - "-tg1"
+
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn: !Ref TargetGroup
+      LoadBalancerArn: !Ref Gwlb
+
+Outputs:
+  SpGwlbArn:
+    Description: Service Provider Gwlb ARN
+    Value: !Ref Gwlb
+  SpTgArn:
+    Description: Service Provider Target Group ARN
+    Value: !Ref TargetGroup  
+```
