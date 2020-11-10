@@ -6,7 +6,7 @@
 
 * This section contains sample AWS Cloudformation templates that demonstrates how to create distributed architecture using AWS Gateway Load Balancer and Gateway Load Balancer Endpoints from templates that are written in YAML.
 
-![](images/distributed_architecture.jpg)
+![](images/gwlb_distributed_architecture.jpg)
 
 ### **Appliance VPC:**
 * [GWLB Appliance VPC](DistributedArchitectureApplianceVpc2Az.md)
