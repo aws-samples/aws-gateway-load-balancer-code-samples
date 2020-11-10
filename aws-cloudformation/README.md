@@ -8,8 +8,7 @@
 
 * More [AWS CloudFormation templates](https://aws.amazon.com/cloudformation/resources/templates/) are available in the [AWS CloudFormation User Guide](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-sample-templates.html).
 
-* For more information about developing applications using AWS CloudFormation, see the [AWS CloudFormation User Guide](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html). 
-
+* For more information about developing applications using AWS CloudFormation, see the [AWS CloudFormation User Guide](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html).
 
 ### **Gateway Load Balancer:**
 * [GWLB Sample Template](gwlb/GwlbWithTargetGroupAndListenerSample.md)
