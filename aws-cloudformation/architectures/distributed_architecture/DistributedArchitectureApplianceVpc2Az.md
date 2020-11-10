@@ -1,0 +1,723 @@
+* Following example shows how to create AWS Gateway Load Balancer Appliance VPC using AWS CloudFormation. For more details refer to [Scaling network traffic inspection using AWS Gateway Load Balancer Blog](https://aws-blogs-prod.amazon.com/networking-and-content-delivery/scaling-network-traffic-inspection-using-AWS-Gateway-Load-Balancer/)
+
+```yaml
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: >-
+  AWS CloudFormation Sample Template For Security Service Setup For 
+  Gateway Load Balancer (GWLB). It creates a hairpin setup using iptables
+  
+  This template creates:
+    - 1 VPC
+    - 1 IGW
+    - 2 Public subnets in unique availability zone
+    - 1 Public route table
+      - 2 public subnets associated with this route table
+      - Next hope for 0.0.0.0/0 set to IGW
+    - 1 Security group
+      - port 22 access
+      - port 80 access
+      - All TCP, UDP and ICMP from VPC CIDR
+    - 2 Amazon Linux 2 instances acting as appliance in each AZ. 
+      Registered as targets behind a GWLB.
+    - 1 GWLB
+    - 1 Target group for GWLB 
+    - 1 Listner for GWLB
+    - 1 VPC endpoint service 
+  
+  **WARNING** This template creates one or more Amazon EC2 instances and a 
+  GWLB. You will be billed for the AWS resources used if you
+  create a stack from this template.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Network Configuration
+        Parameters:
+          - VpcCidr
+          - AvailabilityZone1
+          - PublicSubnet1Cidr
+          - AvailabilityZone2
+          - PublicSubnet2Cidr
+      - Label:
+          default: Appliance Configuration
+        Parameters:
+          - ApplianceInstanceType
+          - ApplianceAmiId          
+          - ApplianceInstanceDiskSize
+          - KeyPairName
+          - AccessLocation          
+      - Label:
+          default: Gateway Load Balancer Configuration
+        Parameters:
+          - GwlbName
+          - TargetGroupName
+          - HealthPort
+          - HealthProtocol          
+      - Label:
+          default: VPC Endpoint Service Configuration
+        Parameters:
+          - ConnectionAcceptance
+          - AwsAccountToWhitelist
+
+    ParameterLabels:
+      VpcCidr:
+        default: Network CIDR block for new VPC   
+      AvailabilityZone1:
+        default: Availability Zone 1
+      PublicSubnet1Cidr:
+        default: Network CIDR for Public Subnet 1
+      AvailabilityZone2:
+        default: Availability Zone 2        
+      PublicSubnet2Cidr:
+        default: Network CIDR for Public Subnet 2     
+      ApplianceInstanceType:
+        default: Appliance Instance Type
+      ApplianceAmiId:
+        default: Latest AMI ID for appliance (ec2 instance)        
+      ApplianceInstanceDiskSize:
+        default: Appliance Instance Size in GB
+      KeyPairName:
+        default: KeyPair required for accessing Appliance instance
+      AccessLocation:
+        default: Network CIDR to access Appliance instance
+      GwlbName:
+        default: Gateway Load Balancer Name
+      TargetGroupName:
+        default: Target Group Name
+      HealthPort:
+        default: Health Check Port
+      HealthProtocol:
+        default: Health Check Protocol        
+      ConnectionAcceptance:
+        default: VPC Endpoint Service Acceptance Required Attribute
+      AwsAccountToWhitelist:
+        default: AWS Account to Whitelist for the Service        
+
+Parameters:
+  VpcCidr:
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$"
+    Default: 192.168.1.0/24
+    Description: CIDR block for the VPC
+    Type: String
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/y
+  AvailabilityZone1:
+    Description: Availability Zone to use for the Public Subnet 1 in the VPC
+    Type: AWS::EC2::AvailabilityZone::Name
+    ConstraintDescription: Valid Availability Zone Id
+  AvailabilityZone2:
+    Description: Availability Zone to use for the Public Subnet 2 in the VPC
+    Type: AWS::EC2::AvailabilityZone::Name
+    ConstraintDescription: Valid Availability Zone Id
+  PublicSubnet1Cidr:
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$"
+    Default: 192.168.1.0/28
+    Description: CIDR block for the Public Subnet 1 located in Public Availability Zone 1
+    Type: String
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+  PublicSubnet2Cidr:
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$"
+    Default: 192.168.1.16/28
+    Description: CIDR block for the Public Subnet 2 located in Public Availability Zone 2
+    Type: String
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+  ApplianceInstanceType:
+    Description: Select EC2 instance type for Appliance instance. Default is set to t2.micro
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+    Type: String
+  ApplianceAmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'    
+  ApplianceInstanceDiskSize:
+    Description: Appliance instance disk size in GB. Default is set to 8GB
+    Default: 8
+    AllowedValues: [8]
+    Type: Number
+    ConstraintDescription: Should be a valid instance size in GB
+  KeyPairName:
+    Description: EC2 KeyPair required for accessing EC2 instance
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: Must be the name of an existing EC2 KeyPair
+  AccessLocation:
+    Description: >-
+      Enter desired Network CIDR to allow traffic to appliance. Default is set to
+      access from anywhere and it is not recommended
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+    MinLength: "9"
+    MaxLength: "18"
+    Default: 0.0.0.0/0
+    Type: String
+    ConstraintDescription: Must be a valid Network CIDR of the form x.x.x.x/y
+  GwlbName:
+    Description: >-
+      Appliance gateway name. This name must be unique within your AWS 
+      account and can have a maximum of 32 alphanumeric characters and 
+      hyphens. A name cannot begin or end with a hyphen.
+    Type: String
+    Default: gwlb1
+    ConstraintDescription: Must be a valid GWLB Name
+  TargetGroupName:
+    Description: Target Group Name
+    Type: String
+    Default: tg1
+    ConstraintDescription: Must be a valid target group name
+  HealthProtocol:
+    Description: >-
+      The protocol the appliane gateway uses when performing health checks on
+      targets. For Application Load Balancers, the default is HTTP.
+    Type: String
+    Default: HTTP
+    AllowedValues: ['TCP', 'HTTP', 'HTTPS']
+    ConstraintDescription: Must be a valid health check protocol
+  HealthPort:
+    Description: >- 
+      The port the load balancer uses when performing health checks
+      on targets. The default is traffic-port, which is the port on
+      which each target receives traffic from the load balancer.
+    Type: String
+    Default: '80'
+    ConstraintDescription: Must be a valid health check port    
+  ConnectionAcceptance:
+    Description: >-
+      Acceptance required for endpoint connection or not. Select true or
+      false to either acceptance required or acceptance not required 
+      default is set to false: acceptance not required
+    Default: "false"
+    AllowedValues: ["true", "false"]
+    Type: String
+    ConstraintDescription: Must be true or false
+  AwsAccountToWhitelist:
+    Description: >-
+      Enter ARN of one or more prinicapls: IAM user, IAM roles and AWS accounts.
+      To grant permissions to all principals, specify an asterisk (*).
+      exmaple: arn:aws:iam::112233445566:user1
+    Type: String
+    ConstraintDescription: Must be a valid AWS ARN of one or more principals    
+
+Resources:
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidr
+      EnableDnsSupport: "true"
+      EnableDnsHostnames: "true"
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ""
+            - - !Ref AWS::StackName
+              - "-vpc"
+  
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ""
+            - - !Ref AWS::StackName
+              - "-igw"
+  
+  AttachInternetGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Vpc
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Ref AvailabilityZone1
+      CidrBlock: !Ref PublicSubnet1Cidr
+      VpcId: !Ref Vpc
+      MapPublicIpOnLaunch: "true"
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ""
+            - - !Ref AWS::StackName
+              - "-appliance-subnet1"
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Ref AvailabilityZone2
+      CidrBlock: !Ref PublicSubnet2Cidr
+      VpcId: !Ref Vpc
+      MapPublicIpOnLaunch: "true"
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ""
+            - - !Ref AWS::StackName
+              - "-appliance-subnet2"
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ""
+            - - !Ref AWS::StackName
+              - "-appliance-rtb"
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachInternetGateway
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+      RouteTableId: !Ref PublicRouteTable
+  
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet1
+      RouteTableId: !Ref PublicRouteTable
+  
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet2
+      RouteTableId: !Ref PublicRouteTable
+
+  ApplicationSg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref Vpc
+      GroupName: !Join
+        - ""
+        - - !Ref AWS::StackName
+          - "-app-sg"
+      GroupDescription: >-
+        Access to Appliance instance: allow SSH and ICMP access from desired CIDR.
+        Allow all traffic from VPC CIDR
+      SecurityGroupIngress:
+        - CidrIp: !Ref AccessLocation
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+        - CidrIp: !Ref AccessLocation
+          IpProtocol: ICMP
+          FromPort: -1
+          ToPort: -1
+        - CidrIp: !Ref AccessLocation
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+        - CidrIp: !Ref VpcCidr
+          IpProtocol: "-1"
+          FromPort: -1
+          ToPort: -1          
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: "-1"
+          FromPort: -1
+          ToPort: -1
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ""
+            - - !Ref AWS::StackName
+              - "-app-sg"
+
+  Gwlb:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Ref GwlbName
+      Type: gateway
+      Subnets:
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+      Tags:
+      - Key: Name
+        Value: !Join
+          - ""
+          - - !Ref AWS::StackName
+            - "-gwlb1"
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Ref TargetGroupName
+      Port: 6081
+      Protocol: GENEVE
+      TargetGroupAttributes:
+      - Key: deregistration_delay.timeout_seconds
+        Value: 20
+      VpcId: !Ref Vpc
+      HealthCheckPort: !Ref HealthPort
+      HealthCheckProtocol: !Ref HealthProtocol
+      TargetType: instance
+      Targets:
+        - Id: !Ref Appliance1
+        - Id: !Ref Appliance2
+      Tags:
+      - Key: Name
+        Value: !Join
+          - ""
+          - - !Ref AWS::StackName
+            - "-tg1"
+
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn: !Ref TargetGroup
+      LoadBalancerArn: !Ref Gwlb
+
+
+  ApplianceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+
+  AppliancePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: AppServer
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - ec2:DescribeNetworkInterfaces
+            Resource: '*'
+      Roles:
+        - !Ref ApplianceRole
+
+  ApplianceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+        - !Ref ApplianceRole
+
+  Appliance1:
+    DependsOn: Gwlb
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref ApplianceAmiId
+      KeyName: !Ref KeyPairName
+      InstanceType: !Ref ApplianceInstanceType
+      IamInstanceProfile: !Ref ApplianceProfile
+      SecurityGroupIds:
+        - !Ref ApplicationSg
+      SubnetId: !Ref PublicSubnet1
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: !Ref ApplianceInstanceDiskSize
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ''
+            - - !Ref 'AWS::StackName'
+              - '-appliance1'
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash -ex
+          
+          # Install packages:
+          yum update -y;
+          yum install jq -y;
+          yum install httpd -y;
+          yum install htop -y;
+          sudo yum install iptables-services -y;
+          
+          # Enable IP Forwarding:
+          sudo sysctl -w net.ipv4.ip_forward=1;
+
+          # Configure hostname:
+          hostnamectl set-hostname gwlb-appliance1;
+          
+          # Configure SSH client alive interval for ssh session timeout:
+          echo 'ClientAliveInterval 60' | sudo tee --append /etc/ssh/sshd_config;
+          service sshd restart;
+          
+          # Set dark background for vim:
+          touch /home/ec2-user/.vimrc;
+          echo "set background=dark" >> /home/ec2-user/.vimrc;
+
+          # Define variables:
+          curl --silent http://169.254.169.254/latest/dynamic/instance-identity/document > /home/ec2-user/iid;
+          export instance_interface=$(curl --silent http://169.254.169.254/latest/meta-data/network/interfaces/macs/);
+          export instance_vpcid=$(curl --silent http://169.254.169.254/latest/meta-data/network/interfaces/macs/$instance_interface/vpc-id);
+          export instance_az=$(cat /home/ec2-user/iid |grep 'availability' | awk -F': ' '{print $2}' | awk -F',' '{print $1}');
+          export instance_ip=$(cat /home/ec2-user/iid |grep 'privateIp' | awk -F': ' '{print $2}' | awk -F',' '{print $1}' | awk -F'"' '{print$2}');
+          export instance_region=$(cat /home/ec2-user/iid |grep 'region' | awk -F': ' '{print $2}' | awk -F',' '{print $1}' | awk -F'"' '{print$2}');
+          export gwlb_ip=$(aws --region $instance_region ec2 describe-network-interfaces --filters Name=vpc-id,Values=$instance_vpcid | jq ' .NetworkInterfaces[] | select(.AvailabilityZone=='$instance_az') | select(.InterfaceType=="gateway_load_balancer") |.PrivateIpAddress' -r);
+
+          # Start http and configure index.html:
+          systemctl start httpd;
+          touch /var/www/html/index.html;
+          echo "<html>" >> /var/www/html/index.html
+          echo "  <head>" >> /var/www/html/index.html
+          echo "    <title>Gateway Load Balancer POC</title>" >> /var/www/html/index.html
+          echo "    <meta http-equiv='Content-Type' content='text/html; charset=ISO-8859-1'>" >> /var/www/html/index.html
+          echo "  </head>" >> /var/www/html/index.html
+          echo "  <body>" >> /var/www/html/index.html
+          echo "    <h1>Welcome to Gateway Load Balancer POC:</h1>" >> /var/www/html/index.html
+          echo "    <h2>This is appliance running in $instance_az. Happy testing!</h2>" >> /var/www/html/index.html
+          echo "  </body>" >> /var/www/html/index.html
+          echo "</html>" >> /var/www/html/index.html
+
+          # Start and configure iptables:
+          systemctl enable iptables;
+          systemctl start iptables;
+          
+          # Configuration below allows allows all traffic:
+          # Set the default policies for each of the built-in chains to ACCEPT:
+          iptables -P INPUT ACCEPT;
+          iptables -P FORWARD ACCEPT;
+          iptables -P OUTPUT ACCEPT;
+
+          # Flush the nat and mangle tables, flush all chains (-F), and delete all non-default chains (-X):
+          iptables -t nat -F;
+          iptables -t mangle -F;
+          iptables -F;
+          iptables -X;
+
+          # Configure nat table to hairpin traffic back to GWLB:
+          iptables -t nat -A PREROUTING -p udp -s $gwlb_ip -d $instance_ip -i eth0 -j DNAT --to-destination $gwlb_ip:6081;
+          iptables -t nat -A POSTROUTING -p udp --dport 6081 -s $gwlb_ip -d $gwlb_ip -o eth0 -j MASQUERADE;
+
+          # Save iptables:
+          service iptables save;
+
+  Appliance2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref ApplianceAmiId
+      KeyName: !Ref KeyPairName
+      InstanceType: !Ref ApplianceInstanceType
+      IamInstanceProfile: !Ref ApplianceProfile
+      SecurityGroupIds:
+        - !Ref ApplicationSg
+      SubnetId: !Ref PublicSubnet2
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: !Ref ApplianceInstanceDiskSize
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ''
+            - - !Ref 'AWS::StackName'
+              - '-appliance2'
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash -ex
+          
+          # Install packages:
+          yum update -y;
+          yum install jq -y;
+          yum install httpd -y;
+          yum install htop -y;
+          sudo yum install iptables-services -y;
+          
+          # Enable IP Forwarding:
+          sudo sysctl -w net.ipv4.ip_forward=1;
+
+          # Configure hostname:
+          hostnamectl set-hostname gwlb-appliance2;
+          
+          # Configure SSH client alive interval for ssh session timeout:
+          echo 'ClientAliveInterval 60' | sudo tee --append /etc/ssh/sshd_config;
+          service sshd restart;
+          
+          # Set dark background for vim:
+          touch /home/ec2-user/.vimrc;
+          echo "set background=dark" >> /home/ec2-user/.vimrc;
+
+          # Define variables:
+          curl --silent http://169.254.169.254/latest/dynamic/instance-identity/document > /home/ec2-user/iid;
+          export instance_interface=$(curl --silent http://169.254.169.254/latest/meta-data/network/interfaces/macs/);
+          export instance_vpcid=$(curl --silent http://169.254.169.254/latest/meta-data/network/interfaces/macs/$instance_interface/vpc-id);
+          export instance_az=$(cat /home/ec2-user/iid |grep 'availability' | awk -F': ' '{print $2}' | awk -F',' '{print $1}');
+          export instance_ip=$(cat /home/ec2-user/iid |grep 'privateIp' | awk -F': ' '{print $2}' | awk -F',' '{print $1}' | awk -F'"' '{print$2}');
+          export instance_region=$(cat /home/ec2-user/iid |grep 'region' | awk -F': ' '{print $2}' | awk -F',' '{print $1}' | awk -F'"' '{print$2}');
+          export gwlb_ip=$(aws --region $instance_region ec2 describe-network-interfaces --filters Name=vpc-id,Values=$instance_vpcid | jq ' .NetworkInterfaces[] | select(.AvailabilityZone=='$instance_az') | select(.InterfaceType=="gateway_load_balancer") |.PrivateIpAddress' -r);
+
+          # Start httpd and configure index.html:
+          systemctl start httpd;
+          touch /var/www/html/index.html;
+          echo "<html>" >> /var/www/html/index.html
+          echo "  <head>" >> /var/www/html/index.html
+          echo "    <title>Gateway Load Balancer POC</title>" >> /var/www/html/index.html
+          echo "    <meta http-equiv='Content-Type' content='text/html; charset=ISO-8859-1'>" >> /var/www/html/index.html
+          echo "  </head>" >> /var/www/html/index.html
+          echo "  <body>" >> /var/www/html/index.html
+          echo "    <h1>Welcome to Gateway Load Balancer POC:</h1>" >> /var/www/html/index.html
+          echo "    <h2>This is appliance running in $instance_az. Happy testing!</h2>" >> /var/www/html/index.html
+          echo "  </body>" >> /var/www/html/index.html
+          echo "</html>" >> /var/www/html/index.html
+
+          # Start and configure iptables:
+          systemctl enable iptables;
+          systemctl start iptables;
+
+          # Configuration below allows allows all traffic:
+          # Set the default policies for each of the built-in chains to ACCEPT:
+          iptables -P INPUT ACCEPT;
+          iptables -P FORWARD ACCEPT;
+          iptables -P OUTPUT ACCEPT;
+
+          # Flush the nat and mangle tables, flush all chains (-F), and delete all non-default chains (-X):
+          iptables -t nat -F;
+          iptables -t mangle -F;
+          iptables -F;
+          iptables -X;
+
+          # Configure nat table to hairpin traffic back to GWLB:
+          iptables -t nat -A PREROUTING -p udp -s $gwlb_ip -d $instance_ip -i eth0 -j DNAT --to-destination $gwlb_ip:6081;
+          iptables -t nat -A POSTROUTING -p udp --dport 6081 -s $gwlb_ip -d $gwlb_ip -o eth0 -j MASQUERADE;
+
+          # Save iptables:
+          service iptables save;
+
+
+  VpcEndpointService:
+    Type: AWS::EC2::VPCEndpointService
+    Properties:
+      GatewayLoadBalancerArns:
+        - !Ref Gwlb
+      AcceptanceRequired: !Ref ConnectionAcceptance
+ 
+  VpcEndpointServicePermissions:
+    Type: AWS::EC2::VPCEndpointServicePermissions
+    Properties:
+      AllowedPrincipals:
+        - !Ref AwsAccountToWhitelist
+      ServiceId: !Ref VpcEndpointService
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeVpcEndpointServiceConfigurations
+                  - ec2:DescribeVpcEndpointServicePermissions
+                  - ec2:DescribeVpcEndpointServices
+                Resource: "*"
+
+  DescribeVpceService:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: "index.handler"
+      Role: !GetAtt
+        - LambdaExecutionRole
+        - Arn
+      Code:
+        ZipFile: |
+          import boto3
+          import cfnresponse
+          import json
+          import logging
+          def handler(event, context):
+              logger = logging.getLogger()
+              logger.setLevel(logging.INFO)
+              responseData = {}
+              responseStatus = cfnresponse.FAILED
+              logger.info('Received event: {}'.format(json.dumps(event)))
+              if event["RequestType"] == "Delete":
+                  responseStatus = cfnresponse.SUCCESS
+                  cfnresponse.send(event, context, responseStatus, responseData)
+              if event["RequestType"] == "Create":
+                  try:
+                      VpceServiceId = event["ResourceProperties"]["Input"]
+                  except Exception as e:
+                      logger.info('VPC Endpoint Service Id retrival failure: {}'.format(e))
+                  try:
+                      ec2 = boto3.client('ec2')
+                  except Exception as e:
+                      logger.info('boto3.client failure: {}'.format(e))
+                  try:
+                      response = ec2.describe_vpc_endpoint_service_configurations(
+                          Filters=[
+                              {
+                                  'Name': 'service-id',
+                                  'Values': [VpceServiceId]
+                              }
+                          ]
+                      )
+                  except Exception as e:
+                      logger.info('ec2.describe_vpc_endpoint_service_configurations failure: {}'.format(e))
+                  ServiceName = response['ServiceConfigurations'][0]['ServiceName']
+                  responseData['Data'] = ServiceName
+                  responseStatus = cfnresponse.SUCCESS
+                  cfnresponse.send(event, context, responseStatus, responseData)
+      Runtime: python3.7
+      Timeout: 30
+
+  VpceServiceName:
+    Type: Custom::DescribeVpcEndpointServiceConfigurations
+    Properties:
+      ServiceToken: !GetAtt DescribeVpceService.Arn
+      Input: !Ref VpcEndpointService
+
+Outputs:
+  SecurityVpcCidr:
+    Description: Security VPC CIDR
+    Value: !Ref VpcCidr
+  SecurityVpcId:
+    Description: Security VPC ID
+    Value: !Ref Vpc
+  SecurityPublicSubnet1Id:
+    Description: Security VPC Public Subnet 1 ID
+    Value: !Ref PublicSubnet1
+  SecurityPublicSubnet2Id:
+    Description: Security VPC Public Subnet 2 ID
+    Value: !Ref PublicSubnet2
+  SecurityApplicationSgId:
+    Description: Security VPC Application Security Group ID
+    Value: !Ref ApplicationSg
+  SecurityAppliance1PublicIp:
+    Description: Security VPC Appliance1's public IP
+    Value: !GetAtt Appliance1.PublicIp
+  SecurityAppliance2PublicIp:
+    Description: Security VPC Appliance2's public IP
+    Value: !GetAtt Appliance2.PublicIp    
+  SecurityGwlbArn:
+    Description: Security VPC Gwlb ARN
+    Value: !Ref Gwlb
+  SecurityVpcEndpointServiceId:
+    Description: Security VPC Endpoint Service ID
+    Value: !Ref VpcEndpointService
+  SecurityVpcEndpointServiceName:
+    Description: Security VPC Endpoint Service Name. Required to create VPC Endpoint
+    Value: !GetAtt VpceServiceName.Data
