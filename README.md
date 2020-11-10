@@ -2,6 +2,8 @@
 
 ### Welcome
 
+![](images/gwlb_icon.jpg)
+
 This is a respository for code examples to help accelerate your development of
 AWS Gateway Load Balancer (GWLB). The repository is organized by programming language or technology:
 
