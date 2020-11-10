@@ -9,7 +9,7 @@ import logging
 from botocore.exceptions import ClientError
 
 # create required boto3 clients and resources:
-ec2 = boto3.client('ec2-gwlbe')
+ec2 = boto3.client('ec2')
 
 
 def create_gwlbe(service_name, vpc_id, subnet_ids):
