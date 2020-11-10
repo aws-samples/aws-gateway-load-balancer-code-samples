@@ -9,7 +9,7 @@ import logging
 from botocore.exceptions import ClientError
 
 # create required boto3 clients and resources:
-ec2 = boto3.client('ec2')
+ec2 = boto3.client('ec2-gwlbe')
 
 
 def create_gwlbe(service_name, vpc_id, subnet_ids):
@@ -19,7 +19,7 @@ def create_gwlbe(service_name, vpc_id, subnet_ids):
     Accepts:
     - service_name (str): VPCE Service name.
     - vpc_id : 'vpc-xxxx'
-    - subnet_ids (list of str): ['subnet-xxxx' 'subnet-yyyy']
+    - subnet_ids (list of str): ['subnet-xxxx'], only one subnet id for GWLBe
 
     Usage:
     - create_gwlbe('service_name', 'vpc-xxxx', ['subnet-xxxx']
@@ -47,21 +47,21 @@ def main():
     Accepts:
     --service_name: VPC-E Service name
     --vpc_id: vpc id to with GWLBE is associated
-    --subnet_ids: list of subnet ids
+    --subnet_id: list of subnet id. As of now only one subnet id supported for GWLBe
 
     Usage:
     ./create_vpc_endpoint.py \
     --service_name com.amazonaws.vpce.sa-east-1.vpce-svc-05c11ebdfc1b84593 \
     --vpc_id vpc-09a8e887492790aea
-    --subnet_ids subnet-002136cca79d6bba3
+    --subnet_id subnet-002136cca79d6bba3
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('--service_name', required=True,
                         help='specify service name', type=str)
     parser.add_argument('--vpc_id', required=True,
                         help='specify vpc id', type=str)
-    parser.add_argument('--subnet_ids', nargs='+', required=True,
-                        help='specify subnet ids')
+    parser.add_argument('--subnet_id', nargs='+', required=True,
+                        help='specify subnet id')
 
     args = parser.parse_args()
 
@@ -70,11 +70,11 @@ def main():
     ############################
     service_name = args.service_name
     vpc_id = args.vpc_id
-    subnet_ids = args.subnet_ids
+    subnet_id = args.subnet_id
     #############################
 
     # GWLBE:
-    gwlbe1 = create_gwlbe(service_name, vpc_id, subnet_ids)
+    gwlbe1 = create_gwlbe(service_name, vpc_id, subnet_id)
     print(f"GWLBE1 ID: {gwlbe1[1]}")
     print(f"GWLBE1 TYPE: {gwlbe1[2]}")
 

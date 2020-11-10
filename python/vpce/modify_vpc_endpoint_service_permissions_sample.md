@@ -74,9 +74,9 @@ def main():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('--service_id', required=True,
-                        help='specify target group name', type=str)
+                        help='specify service id', type=str)
     parser.add_argument('--principal_arns', nargs='+', required=True,
-                        help='specify gwlb arns')
+                        help='specify iam arns')
     parser.add_argument('--add_remove', required=True,
                         help='add or remove principals', type=str)
 

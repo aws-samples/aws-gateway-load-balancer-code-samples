@@ -56,7 +56,7 @@ def main():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('--service_id', required=True,
-                        help='specify target group name', type=str)
+                        help='specify service id', type=str)
     parser.add_argument('--no_accept', action='store_false', help='Specify'
                         ' whether to accept or not. If you want to use False,'
                         ' specify --no_accept with no value. If you want to'
