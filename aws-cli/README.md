@@ -15,6 +15,7 @@ Refer to [AWS CLI](https://aws.amazon.com/cli/) for details
 * [Disable Cross-Zone Load Balancing Sample](gwlb/disable_crosszone_lb_gwlb_sample.md)
 * [Delete GWLB Sample](gwlb/delete_gwlb_sample.md)
 * [Delete Target Group Sample](gwlb/delete_tg_sample.md)
+* [Amazon Linxu 2 iptables Sample](gwlb/configure_iptables_al2.md)
 
 ### **VPC Endpoint Service:**
 
