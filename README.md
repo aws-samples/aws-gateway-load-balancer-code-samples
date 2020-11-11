@@ -8,10 +8,11 @@ AWS Gateway Load Balancer (GWLB). The repository is organized by programming lan
 * [AWS CloudFormation](aws-cloudformation/)
 * [AWS SDK for Python (Boto3)](python/)
 * [AWS SDK for Go](go/)
+* [AWS CLI](aws-cli/)
 
 ### Note:
 
-* While code samples in this repository has been tested and believe it works well, as always, be sure to test it in your environment before using it in production!
+* **While code samples in this repository has been tested and believe it works well, as always, be sure to test it in your environment before using it in production!**
 
 ## Security
 

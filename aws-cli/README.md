@@ -1,21 +1,20 @@
-### Python (Boto3) sample for AWS Gateway Load Balancer
+### AWS CLI sample for AWS Gateway Load Balancer:
+
+Refer to [AWS CLI](https://aws.amazon.com/cli/) for details
 
 ## Welcome
 
-The following section contains code samples that demonstrate how to manage AWS Gateway Load Balancer from code that is written in the Python programming language using the Boto3 library.
-
-For more information about developing applications using Python and Boto3, see the [AWS SDK for Python (Boto3) Getting Started](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html).
+### Uses AWS CLI version 1
 
 ### **Gateway Load Balancer:**
-
 * [Create GWLB Sample](gwlb/create_gwlb_sample.md)
 * [Create Target Group Sample](gwlb/create_tg_sample.md)
 * [Create Listener Sample](gwlb/create_listener_sample.md)
-* [Create GWLB, Target Group and Listener Sample](gwlb/create_gwlb_tg_listener_sample.md)
 * [Register Targets Sample](gwlb/register_targets_sample.md)
+* [Enable Cross-Zone Load Balancing Sample](gwlb/enable_crosszone_lb_gwlb_sample.md)
+* [Disable Cross-Zone Load Balancing Sample](gwlb/disable_crosszone_lb_gwlb_sample.md)
 * [Delete GWLB Sample](gwlb/delete_gwlb_sample.md)
 * [Delete Target Group Sample](gwlb/delete_tg_sample.md)
-* [Delete GWLB and Target Group Sample](gwlb/delete_gwlb_tg_sample.md)
 
 ### **VPC Endpoint Service:**
 
@@ -24,7 +23,7 @@ For more information about developing applications using Python and Boto3, see t
 * [Modify VPC Endpoint Service Permissions Sample](vpce/modify_vpc_endpoint_service_permissions_sample.md)
 * [Delete VPC Endpoint Service Sample](vpce/delete_vpc_endpoint_service_sample.md)
 
-### **Gateway Load Balancer Endpoint:**
+### **VPC Endpoint:**
 
 * [Create GWLB Endpoint Sample](vpce/create_gwlb_endpoint_sample.md)
 * [Delete GWLB Endpoint Sample](vpce/delete_gwlb_endpoint_sample.md)
