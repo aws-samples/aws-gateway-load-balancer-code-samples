@@ -631,7 +631,7 @@ Resources:
           hostnamectl set-hostname gwlbe-bastion-host;
 
           # Configure SSH client alive interval for ssh session timeout:
-          echo 'ApplicationAliveInterval 60' | sudo tee --append /etc/ssh/sshd_config;
+          echo 'ClientAliveInterval 60' | sudo tee --append /etc/ssh/sshd_config;
           service sshd restart;
           
           # Set dark background for vim:

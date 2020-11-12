@@ -8,8 +8,11 @@
 
 ![](images/gwlb_distributed_architecture.jpg)
 
+ * **Launch GWLB Appliance VPC Sample template before launching GWLB Spoke VPC Sample template.**
+   * Appliance creates VPC Endpoint Service Name required for the Spoke VPC. Spoke VPC creates Gateway Load Balancer Endpoint using the VPC Endpoint Service created by Appliance VPC 
+
 ### **Appliance VPC:**
-* [GWLB Appliance VPC](DistributedArchitectureApplianceVpc2Az.yaml)
+* [GWLB Appliance VPC Sample](DistributedArchitectureApplianceVpc2Az.yaml)
 
 ### **Spoke VPC:**
-* [GWLB Spoke VPC](DistributedArchitectureSpokeVpc2Az.yaml)
+* [GWLB Spoke VPC Sample](DistributedArchitectureSpokeVpc2Az.yaml)
