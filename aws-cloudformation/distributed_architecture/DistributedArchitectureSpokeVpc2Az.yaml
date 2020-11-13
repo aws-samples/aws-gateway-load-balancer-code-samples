@@ -399,6 +399,9 @@ Resources:
               - "-app-sg"
 
   Application1:
+    DependsOn:
+    - AddRoute1ApplicationRouteTable1
+    - AddApplication1IgwRouteTable
     Type: AWS::EC2::Instance
     Properties:
       ImageId: !Ref ApplicationAmiId
@@ -456,6 +459,9 @@ Resources:
           echo "</html>" >> /var/www/html/index.html
 
   Application2:
+    DependsOn:
+    - AddRoute2ApplicationRouteTable2
+    - AddApplication2IgwRouteTable
     Type: AWS::EC2::Instance
     Properties:
       ImageId: !Ref ApplicationAmiId
