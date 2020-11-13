@@ -13,6 +13,9 @@ export instance_ip=<x.x.x.x>
 # Replace <y.y.y.y> with appropriate GWLB IP. It should be from the same AZ as the instance.
 export gwlb_ip=<y.y.y.y>
 
+# Enable IP Forwarding:
+sudo sysctl -w net.ipv4.ip_forward=1;
+
 # Start and configure iptables:
 systemctl enable iptables;
 systemctl start iptables;
