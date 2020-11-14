@@ -1,7 +1,25 @@
-* Following example show how to create Gateway Load Balancer, target group and listener using Python (Boto3) Library.
-
-```python
 #! /usr/bin/env python3
+
+"""
+Purpose:
+
+Following sample shows you how to create Gateway Load Balancer (GWLB),
+target group and listener using Python (Boto3) Library.
+
+Listener: For Gateway Load Balancer (GWLB), listener doesn't support protocol
+and port attribute.
+
+Target Group: By default gets created with healthcheck configured for protocol:
+TCP, port:80. If you don't have anything configured on appliances to listen on
+TCP:80, your health checks will fail and instances will be marked unhealthy.
+
+In the example below, for healthcheck, we overide the port and use HTTP, port
+80. Appliances should be listening and respodning to HTTP, or else healthcheck
+will fail. Replace the parameter values inside '< >' with appropriate values.
+
+For more details, refer to Target Groups for your Gateway Load Balancers
+https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/target-groups.html
+"""
 
 import argparse
 import boto3
@@ -74,7 +92,7 @@ def create_gwlb(gwlb_name, subnet_id_list):
             Type='gateway'
         )
         gwlb_arn = response['LoadBalancers'][0]['LoadBalancerArn']
-        logging.info(f"Waiting for GWLB's state to change to available")
+        logging.info("Waiting for GWLB's state to change to available")
         waiter.wait(
             LoadBalancerArns=[gwlb_arn],
             WaiterConfig={
@@ -213,4 +231,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-```

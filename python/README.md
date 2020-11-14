@@ -8,23 +8,23 @@ For more information about developing applications using Python and Boto3, see t
 
 ### **Gateway Load Balancer:**
 
-* [Create GWLB Sample](gwlb/create_gwlb_sample.md)
-* [Create Target Group Sample](gwlb/create_tg_sample.md)
-* [Create Listener Sample](gwlb/create_listener_sample.md)
-* [Create GWLB, Target Group and Listener Sample](gwlb/create_gwlb_tg_listener_sample.md)
-* [Register Targets Sample](gwlb/register_targets_sample.md)
-* [Delete GWLB Sample](gwlb/delete_gwlb_sample.md)
-* [Delete Target Group Sample](gwlb/delete_tg_sample.md)
-* [Delete GWLB and Target Group Sample](gwlb/delete_gwlb_tg_sample.md)
+* [Create GWLB Sample](gwlb/create_gwlb_sample.py)
+* [Create Target Group Sample](gwlb/create_tg_sample.py)
+* [Create Listener Sample](gwlb/create_listener_sample.py)
+* [Create GWLB, Target Group and Listener Sample](gwlb/create_gwlb_tg_listener_sample.py)
+* [Register Targets Sample](gwlb/register_targets_sample.py)
+* [Delete GWLB Sample](gwlb/delete_gwlb_sample.py)
+* [Delete Target Group Sample](gwlb/delete_tg_sample.py)
+* [Delete GWLB and Target Group Sample](gwlb/delete_gwlb_tg_sample.py)
 
 ### **VPC Endpoint Service:**
 
-* [Create VPC Endpoint Service Configuration Sample](vpce/create_vpc_endpoint_service_configuration_sample.md)
-* [Modify VPC Endpoint Service Configuration Sample](vpce/modify_vpc_endpoint_service_configuration_sample.md)
-* [Modify VPC Endpoint Service Permissions Sample](vpce/modify_vpc_endpoint_service_permissions_sample.md)
-* [Delete VPC Endpoint Service Sample](vpce/delete_vpc_endpoint_service_sample.md)
+* [Create VPC Endpoint Service Configuration Sample](vpce/create_vpce_service_configuration_sample.py)
+* [Modify VPC Endpoint Service Configuration Sample](vpce/modify_vpce_service_configuration_sample.py)
+* [Modify VPC Endpoint Service Permissions Sample](vpce/modify_vpce_service_permissions_sample.py)
+* [Delete VPC Endpoint Service Sample](vpce/delete_vpce_service_sample.py)
 
 ### **Gateway Load Balancer Endpoint:**
 
-* [Create GWLB Endpoint Sample](vpce/create_gwlb_endpoint_sample.md)
-* [Delete GWLB Endpoint Sample](vpce/delete_gwlb_endpoint_sample.md)
+* [Create GWLB Endpoint Sample](vpce/create_gwlb_endpoint_sample.py)
+* [Delete GWLB Endpoint Sample](vpce/delete_gwlb_endpoint_sample.py)

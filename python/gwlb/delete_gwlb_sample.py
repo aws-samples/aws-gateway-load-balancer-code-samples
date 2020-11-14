@@ -1,7 +1,11 @@
-* Following example show how to delete target group and Gateway Load Balancer using Python (Boto3) Library.
-
-```python
 #! /usr/bin/env python3
+
+"""
+Purpose:
+
+Following sample shows you how to delete Gateway Load Balancer (GWLB) using
+Python (Boto3) Library.
+"""
 
 import argparse
 import boto3
@@ -10,25 +14,6 @@ from botocore.exceptions import ClientError
 
 # create required boto3 clients and resources:
 elbv2 = boto3.client('elbv2')
-
-
-def delete_tg(tg_arn):
-    """
-    Deletes target group and returns response
-
-    Accepts:
-    - tg_arn: Target group ARN. Not required if retrieving from DynamoDB
-
-    Usage:
-    - delete_tg('arn:aws:elasticloadbalancing:xxxxx')
-    """
-    logging.info(f"Deleting target group:")
-    try:
-        response = elbv2.delete_target_group(TargetGroupArn=tg_arn)
-        return response
-    except ClientError as e:
-        logging.error(e)
-        return None
 
 
 def delete_gwlb(gwlb_arn):
@@ -61,33 +46,26 @@ def delete_gwlb(gwlb_arn):
 
 def main():
     """
-    Delete GWLB and associated Target Group and Listener:
+    Deletes GWLB and associated listener:
 
     Accepts:
-    --tg_arn: ARN of Target Group to be deleted
     --gwlb_arn: ARN of Gateway Load Balancer to be deleted
 
     Usage:
-    ./delete_gwlb_tg.py \
-    --tg_arn arn:aws:elasticloadbalancing:sa-east-1:xxxxxxxxxxxx:targetgroup/gwlb-tg1/002138d5900763b08b \
-    --gwlb_arn arn:aws:elasticloadbalancing:sa-east-1:xxxxxxxxxxxx:loadbalancer/gwlb/provider-gwlb1/8b4c4f9ff8dfc05f
+    python delete_gwlb.py \
+    --gwlb_arn arn:aws:elasticloadbalancing:us-west-2:xxxxxxxxxxxx:loadbalancer/gwlb/boto3-gwlb1/8b4c4f9ff8dfc05f
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--tg_arn', required=True,
-                        help='specify Target Group ARN', type=str)
     parser.add_argument('--gwlb_arn', required=True,
                         help='specify Gateway Load Balancer ARN', type=str)
     args = parser.parse_args()
     ############################
     # Define script variables:
     ############################
-    tg_arn = args.tg_arn
     gwlb_arn = args.gwlb_arn
     ############################
     delete_gwlb(gwlb_arn)
-    delete_tg(tg_arn)
 
 
 if __name__ == '__main__':
     main()
-```

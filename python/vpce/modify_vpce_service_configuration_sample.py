@@ -1,7 +1,11 @@
-* Following example show how to modify VPC Endpoint Service Configuration using Python (Boto3) Library.
-
-```python
 #! /usr/bin/env python3
+
+"""
+Purpose:
+
+Following sample shows you how to modify VPC Endpoint Service Configuration
+using Python (Boto3) Library.
+"""
 
 import argparse
 import boto3
@@ -46,21 +50,23 @@ def main():
     --service_id: vpce-svc-xxxx
     --no_accept
 
-    Usage: To not accept:
-    ./create_gwlb_tg_listener.py \
-    --service_id vpce-svc-xxxx \
-    --no-accept
-    Usage: To accept:
-    ./create_gwlb_tg_listener.py \
-    --service_id vpce-svc-xxxx
+        Usage:
+    Acceptance not required:
+    python modify_vpce_service_configuration_sample.py \
+    --service_id service-id
+    --no_acceptance
+
+    Acceptance required:
+    python modify_vpce_service_configuration_sample.py \
+    --service_id service-id
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('--service_id', required=True,
                         help='specify service id', type=str)
-    parser.add_argument('--no_accept', action='store_false', help='Specify'
+    parser.add_argument('--no_acceptance', action='store_false', help='Specify'
                         ' whether to accept or not. If you want to use False,'
-                        ' specify --no_accept with no value. If you want to'
-                        ' use True, do not specity the --no_accept at all')
+                        ' specify --no_acceptance with no value. If you want to'
+                        ' use True, do not specity the --no_acceptance at all')
 
     args = parser.parse_args()
 
@@ -68,13 +74,12 @@ def main():
     # Define script variables:
     ############################
     service_id = args.service_id
-    no_accept = args.no_accept
+    no_acceptance = args.no_acceptance
     #############################
 
     # VPC-E Service:
-    service1 = modify_vpce_service_acceptance(service_id, no_accept)
+    service1 = modify_vpce_service_acceptance(service_id, no_acceptance)
 
 
 if __name__ == '__main__':
     main()
-```

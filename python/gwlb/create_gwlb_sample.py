@@ -1,7 +1,11 @@
-* Following example show how to create Gateway Load Balancer using Python (Boto3) Library.
-
-```python
 #! /usr/bin/env python3
+
+"""
+Purpose:
+
+Following sample shows you how to create Gateway Load Balancer (GWLB) using
+Python (Boto3) Library.
+"""
 
 import argparse
 import boto3
@@ -20,7 +24,7 @@ def create_gwlb(gwlb_name, subnet_id_list):
     - subnet_id_list: List of subnet id to be assigned to GWLB
 
     Usage:
-    - create_gwlb('gwlb123', ['subnet-123'])
+    - create_gwlb('gwlb123', ['subnet-123', 'subnet-456'])
     """
     logging.info(f"Creating gateway load balancer: {gwlb_name}")
     waiter = elbv2.get_waiter('load_balancer_available')
@@ -55,7 +59,7 @@ def main():
     --subnet_ids: Subnet ids to be assocated with GWLB
 
     Usage:
-    ./create_gwlb.py --gwlb_name boto3-gwlb \
+    python create_gwlb_sample.py --gwlb_name boto3-gwlb1 \
     --subnet_ids 'subnet-0348ec3f4869e2a1f' 'subnet-04132654a0e466491'
     """
     parser = argparse.ArgumentParser()
@@ -76,6 +80,6 @@ def main():
     gwlb1_arn = gwlb1[0]['LoadBalancers'][0]['LoadBalancerArn']
     print(f"GWLB ARN: {gwlb1_arn}")
 
+
 if __name__ == '__main__':
     main()
-```

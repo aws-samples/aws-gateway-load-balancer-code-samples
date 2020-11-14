@@ -1,7 +1,11 @@
-* Following example show how to delete target group using Python (Boto3) Library.
-
-```python
 #! /usr/bin/env python3
+
+"""
+Purpose:
+
+Following sample shows you how to delete target group using Python (Boto3)
+Library.
+"""
 
 import argparse
 import boto3
@@ -22,7 +26,7 @@ def delete_tg(tg_arn):
     Usage:
     - delete_tg('arn:aws:elasticloadbalancing:xxxxx')
     """
-    logging.info(f"Deleting target group:")
+    logging.info("Deleting target group:")
     try:
         response = elbv2.delete_target_group(TargetGroupArn=tg_arn)
         return response
@@ -39,8 +43,8 @@ def main():
     --tg_arn: ARN of Target Group to be deleted
 
     Usage:
-    ./delete_tg.py \
-    --tg_arn arn:aws:elasticloadbalancing:sa-east-1:xxxxxxxxxxxx:targetgroup/gwlb-tg1/002138d5900763b08b
+    python delete_tg_sample.py \
+    --tg_arn arn:aws:elasticloadbalancing:us-west-2:xxxxxxxxxxxx:targetgroup/boto3-gwlb1-tg1/002138d5900763b08b
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('--tg_arn', required=True,
@@ -56,4 +60,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-```

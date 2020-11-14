@@ -1,7 +1,13 @@
-* Following example show how to create Gateway Load Balancer Endpoint using VPC Endpoint Service Name using Python (Boto3) Library.
-
-```python
 #! /usr/bin/env python3
+
+"""
+Purpose:
+
+Following sample shows you how to create Gateway Load Balance (GWLB) Endpoint
+using VPC Endpoint Service Name using Python (Boto3) Library.
+
+Only one subnet per GWLB Endpoint is supported
+"""
 
 import argparse
 import boto3
@@ -24,7 +30,7 @@ def create_gwlbe(service_name, vpc_id, subnet_ids):
     Usage:
     - create_gwlbe('service_name', 'vpc-xxxx', ['subnet-xxxx']
     """
-    logging.info(f"Creating VPC Endpoint of Type GatewayLoadBalancer:")
+    logging.info("Creating VPC Endpoint of Type GatewayLoadBalancer:")
     try:
         response = ec2.create_vpc_endpoint(
             VpcEndpointType='GatewayLoadBalancer',
@@ -47,10 +53,11 @@ def main():
     Accepts:
     --service_name: VPC-E Service name
     --vpc_id: vpc id to with GWLBE is associated
-    --subnet_id: list of subnet id. As of now only one subnet id supported for GWLBe
+    --subnet_id: list of subnet id. As of now only one subnet id supported for
+    GWLBe
 
     Usage:
-    ./create_vpc_endpoint.py \
+    python create_gwlb_endpoint_sample.py \
     --service_name com.amazonaws.vpce.sa-east-1.vpce-svc-05c11ebdfc1b84593 \
     --vpc_id vpc-09a8e887492790aea
     --subnet_id subnet-002136cca79d6bba3
@@ -81,4 +88,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-```

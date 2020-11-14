@@ -1,7 +1,22 @@
-* Following example show how to create target group using Python (Boto3) Library.
-
-```python
 #! /usr/bin/env python3
+
+"""
+Purpose:
+
+Following sample shows you how to create target group using Python (Boto3)
+Library.
+
+By default target group gets created with healthcheck configured for protocol:
+TCP, port:80. If you don't have anything configured on appliances to listen on
+TCP:80, your health checks will fail and instances will be marked unhealthy.
+
+In the example below, for healthcheck, we overide the port and use HTTP, port
+80. Appliances should be listening and respodning to HTTP, or else healthcheck
+will fail. Replace the parameter values inside '< >' with appropriate values.
+
+For more details, refer to Target Groups for your Gateway Load Balancers
+https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/target-groups.html
+"""
 
 import argparse
 import boto3
@@ -26,7 +41,7 @@ def create_tg(**tg_args):
             'port': 6081,
             'healthchkproto': 'HTTP',
             'healthchkport': '80',
-            'healthchkpath': '/',            
+            'healthchkpath': '/',
             'vpc_id': 'vpc-xxxx',
             'type': 'instance'
         }
@@ -40,6 +55,9 @@ def create_tg(**tg_args):
             Name=tg_args['name'],
             Protocol=tg_args['protocol'],
             Port=tg_args['port'],
+            HealthCheckProtocol=tg_args['healthchkproto'],
+            HealthCheckPort=tg_args['healthchkport'],
+            HealthCheckPath=tg_args['healthchkpath'],
             VpcId=tg_args['vpc_id'],
             TargetType=tg_args['type']
         )
@@ -59,8 +77,8 @@ def main():
     --vpc_id: VPC id to associate TG with
 
     Usage:
-    ./create_gwlb_tg_listener.py \
-    --tg_name provider-gwlb-tg1 \
+    python create_tg_sample.py \
+    --tg_name boto3-gwlb1-tg1 \
     --vpc_id vpc-xxxx
     """
     parser = argparse.ArgumentParser()
@@ -80,6 +98,9 @@ def main():
         'name': tg_name,
         'protocol': 'GENEVE',
         'port': 6081,
+        'healthchkproto': 'HTTP',
+        'healthchkport': '80',
+        'healthchkpath': '/',
         'vpc_id': vpc_id,
         'type': 'instance'
     }
@@ -91,4 +112,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-```    

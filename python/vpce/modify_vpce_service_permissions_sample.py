@@ -1,7 +1,11 @@
-* Following example show how to modify VPC Endpoint Service Permissions using Python (Boto3) Library.
-
-```python
 #! /usr/bin/env python3
+
+"""
+Purpose:
+
+Following sample shows you how to modify VPC Endpoint Service Permissions
+using Python (Boto3) Library.
+"""
 
 import argparse
 import boto3
@@ -61,13 +65,13 @@ def main():
     --remove: remove arns
 
     Usage:
-    ./modify_vpc_endpoint_service_permissions.py \
+    python modify_vpce_service_permissions_sample.py \
     --service_id vpce-svc-xxxx \
     --principal_arns iam-user1-arn \
     --add_remove add
 
     To remove:
-    ./modify_vpc_endpoint_service_permissions.py \
+    python modify_vpce_service_permissions_sample.py \
     --service_id vpce-svc-xxxx \
     --principal_arns iam-user1-arn \
     --remove
@@ -97,4 +101,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-```

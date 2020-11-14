@@ -16,3 +16,6 @@
 ### **VPC Endpoint Sercice:**
 * [GWLB Endpoint Service Sample Template](vpce/GwlbVpcEndpointServiceSample.md)
 * [GWLB Endpoint Sample Template](vpce/GwlbVpcEndpointSample.md)
+
+### **GWLB Architectures:**
+* [GWLB Distributed Architecture](distributed_architecture/)

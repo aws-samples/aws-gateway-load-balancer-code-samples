@@ -1,7 +1,14 @@
-* Following example show how to register targets to target group using Python (Boto3) Library.
-
-```python
 #! /usr/bin/env python3
+
+"""
+Purpose:
+
+Following sample shows you how to register targets to target group using
+Python (Boto3) Library.
+"""
+##############################################################################
+
+##############################################################################
 
 import argparse
 import boto3
@@ -74,4 +81,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-```

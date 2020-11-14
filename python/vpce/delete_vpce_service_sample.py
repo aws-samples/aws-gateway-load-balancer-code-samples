@@ -1,7 +1,11 @@
-* Following example show how to delete VPC Endpoint Service using Python (Boto3) Library.
-
-```python
 #! /usr/bin/env python3
+
+"""
+Purpose:
+
+Following sample shows you how to delete VPC Endpoint Service using Python
+(Boto3) Library.
+"""
 
 import argparse
 import boto3
@@ -22,7 +26,7 @@ def delete_vpce_service(service_ids):
     Usage:
     - delete_vpce_service(['vpce-svc-xxxx', 'vpce-svc-yyyy'])
     """
-    logging.info(f"Creating VPC Endpoint Service:")
+    logging.info("Creating VPC Endpoint Service:")
     try:
         response = ec2.delete_vpc_endpoint_service_configurations(
             ServiceIds=service_ids
@@ -41,7 +45,7 @@ def main():
     --service_ids: VPC-E Service id
 
     Usage:
-    ./delete_vpc_endpoint_service.py \
+    python delete_vpce_service_sample.py \
     --service_ids vpce-svc-xxxx vpce-svc-yyyy
     """
     parser = argparse.ArgumentParser()

@@ -1,8 +1,11 @@
-* Following example show how to delete Gateway Load Balancer Endpoint using Python (Boto3) Library.
-
-```python
 #! /usr/bin/env python3
 
+"""
+Purpose:
+
+Following sample shows you how to delete Gateway Load Balancer (GWLB) Endpoint
+using Python (Boto3) Library.
+"""
 import argparse
 import boto3
 import logging
@@ -22,7 +25,7 @@ def delete_gwlbe(gwlbe_ids):
     Usage:
     - delete_gwlbe(['vpce-xxxx', 'vpce-yyyy'])
     """
-    logging.info(f"Deleting VPC Endpoint Service:")
+    logging.info("Deleting VPC Endpoint Service:")
     try:
         response = ec2.delete_vpc_endpoints(
             VpcEndpointIds=gwlbe_ids
@@ -35,13 +38,13 @@ def delete_gwlbe(gwlbe_ids):
 
 def main():
     """
-    Deletes VPC Endpoint (GWLB-E)
+    Deletes GWLB Endpoint (GWLB-E)
 
     Accepts:
     --gwlbe_ids: GWLB-E ids
 
     Usage:
-    ./create_gwlb_tg_listener.py \
+    python delete_gwlb_endpoint_sample.py \
     --gwlbe_ids vpce-0916122bdbd1ca93e
     """
     parser = argparse.ArgumentParser()
@@ -63,4 +66,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-```
