@@ -10,6 +10,8 @@ AWS Gateway Load Balancer (GWLB). The repository is organized by programming lan
 * [AWS SDK for Go](go/)
 * [AWS CLI](aws-cli/)
 
+To learn more about Gateway Load Balancer, checkout the [Gateway Load Balancer](https://aws.amazon.com/elasticloadbalancing/gateway-load-balancer/) page and the [documentation](https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/introduction.html).
+
 ### Note:
 
 * **While code samples in this repository has been tested and believe it works well, as always, be sure to test it in your environment before using it in production!**
