@@ -16,26 +16,29 @@ export gwlb_ip=<y.y.y.y>
 # Enable IP Forwarding:
 sudo sysctl -w net.ipv4.ip_forward=1;
 
+# Install iptables-services:
+sudo yum install iptables-services -y;
+
 # Start and configure iptables:
-systemctl enable iptables;
-systemctl start iptables;
+sudo systemctl enable iptables;
+sudo systemctl start iptables;
 
 # Configuration below allows allows all traffic:
 # Set the default policies for each of the built-in chains to ACCEPT:
-iptables -P INPUT ACCEPT;
-iptables -P FORWARD ACCEPT;
-iptables -P OUTPUT ACCEPT;
+sudo iptables -P INPUT ACCEPT;
+sudo iptables -P FORWARD ACCEPT;
+sudo iptables -P OUTPUT ACCEPT;
 
 # Flush the nat and mangle tables, flush all chains (-F), and delete all non-default chains (-X):
-iptables -t nat -F;
-iptables -t mangle -F;
-iptables -F;
-iptables -X;
+sudo iptables -t nat -F;
+sudo iptables -t mangle -F;
+sudo iptables -F;
+sudo iptables -X;
 
 # Configure nat table to hairpin traffic back to GWLB:
-iptables -t nat -A PREROUTING -p udp -s $gwlb_ip -d $instance_ip -i eth0 -j DNAT --to-destination $gwlb_ip:6081;
-iptables -t nat -A POSTROUTING -p udp --dport 6081 -s $gwlb_ip -d $gwlb_ip -o eth0 -j MASQUERADE;
+sudo iptables -t nat -A PREROUTING -p udp -s $gwlb_ip -d $instance_ip -i eth0 -j DNAT --to-destination $gwlb_ip:6081;
+sudo iptables -t nat -A POSTROUTING -p udp --dport 6081 -s $gwlb_ip -d $gwlb_ip -o eth0 -j MASQUERADE;
 
 # Save iptables:
-service iptables save;
+sudo service iptables save;
 ```
