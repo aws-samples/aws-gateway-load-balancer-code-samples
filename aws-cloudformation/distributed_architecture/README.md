@@ -2,7 +2,7 @@
 
 ## Welcome
 
-* For more details, refer to blog: **[Scaling network traffic inspection using AWS Gateway Load Balancer](https://aws-blogs-prod.amazon.com/networking-and-content-delivery/scaling-network-traffic-inspection-using-AWS-Gateway-Load-Balancer/)**
+* For more details, refer to blog: **[Scaling network traffic inspection using AWS Gateway Load Balancer](https://aws.amazon.com/blogs/networking-and-content-delivery/scaling-network-traffic-inspection-using-aws-gateway-load-balancer/)**
 
 * This section contains sample AWS Cloudformation templates that demonstrates how to create distributed architecture using AWS Gateway Load Balancer and Gateway Load Balancer Endpoints from templates that are written in YAML.
 
