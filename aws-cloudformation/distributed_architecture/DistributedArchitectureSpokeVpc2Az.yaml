@@ -95,13 +95,13 @@ Parameters:
     ConstraintDescription: Valid Availability Zone Id
   ApplicationSubnet1Cidr:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$"
-    Default: 10.0.0.0/28
+    Default: 10.0.0.32/28
     Description: CIDR block for the Application Subnet 1 located in Availability Zone 1
     Type: String
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
   GwlbeSubnet1Cidr:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$"
-    Default: 10.0.0.16/28
+    Default: 10.0.0.0/28
     Description: CIDR block for the GWLBE Subnet 1 located in Availability Zone 1
     Type: String
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
@@ -111,13 +111,13 @@ Parameters:
     ConstraintDescription: Valid Availability Zone Id
   ApplicationSubnet2Cidr:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$"
-    Default: 10.0.0.32/28
+    Default: 10.0.0.48/28
     Description: CIDR block for the Application Subnet 2 located in Availability Zone 2
     Type: String
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
   GwlbeSubnet2Cidr:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$"
-    Default: 10.0.0.48/28
+    Default: 10.0.0.16/28
     Description: CIDR block for the GWLBE Subnet 2 located in Availability Zone 2
     Type: String
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28    
