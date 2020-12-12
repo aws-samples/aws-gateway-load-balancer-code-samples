@@ -13,8 +13,10 @@ export instance_ip=<x.x.x.x>
 # Replace <y.y.y.y> with appropriate GWLB IP. It should be from the same AZ as the instance.
 export gwlb_ip=<y.y.y.y>
 
-# Enable IP Forwarding:
-sudo sysctl -w net.ipv4.ip_forward=1;
+# Enable IP Forwarding and persist across reboot
+# Enabling using sysctl -w net.ipv4.ip_forward=1, won't persist across reboot.
+sudo echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.d/00-defaults.conf
+sudo sysctl -p /etc/sysctl.d/00-defaults.conf
 
 # Install iptables-services:
 sudo yum install iptables-services -y;
