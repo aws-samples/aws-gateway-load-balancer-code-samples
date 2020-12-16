@@ -2,8 +2,6 @@
 
 ## Welcome
 
-* For more details, refer to blog: **[Building a centralized inspection architecture with AWS Gateway Load Balancer and AWS Transit Gateway](https://aws.amazon.com/blogs/networking-and-content-delivery/building-a-centralized-inspection-architecture-with-AWS-Gateway-Load-Balancer-and-AWS-Transit-Gateway)**
-
 * This section contains sample AWS Cloudformation templates that demonstrates how to create centralized inspection architecture using AWS Gateway Load Balancer (GWLB) AWS Gateway Load Balancer Endpoints (GWLBe), virtual appliances and AWS Transit Gateway (TGW) from templates that are written in YAML.
 
 ![](images/gwlb_centralized_architecture.jpg)
