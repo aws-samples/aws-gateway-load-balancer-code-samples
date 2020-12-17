@@ -64,13 +64,13 @@ Metadata:
       ApplianceVpcId:
         default: Appliane VPC ID
       ApplianceVpcTgwAttachSubnet1Id:
-        default: Appliance VPC Subnet1 ID
+        default: Appliance VPC Transit Gateway Subnet 1 ID
       ApplianceVpcTgwAttachSubnet2Id:
-        default: Appliance VPC Subnet2 ID
+        default: Appliance VPC Transit Gateway Subnet 2 ID
       ApplianceVpcApplianceRtb1Id:
-        default: Appliance VPC Route Table1 ID
+        default: Appliance VPC Appliance Route Table 1 ID
       ApplianceVpcApplianceRtb2Id:
-        default: Appliance VPC Route Table2 ID
+        default: Appliance VPC Appliance Route Table 2 ID
       # Spoke1 VPC Parameter Labels:
       Spoke1VpcId:
         default: Spoke1 VPC ID
@@ -112,11 +112,11 @@ Parameters:
     Type: String
     ConstraintDescription: Must be a valid Subnet ID  
   ApplianceVpcApplianceRtb1Id:
-    Description: Appliance VPC GWLB Route Table 1 ID
+    Description: Appliance VPC Appliance Route Table 1 ID
     Type: String
     ConstraintDescription: Must be a valid Route Table ID    
   ApplianceVpcApplianceRtb2Id:
-    Description: Appliance VPC GWLB Route Table 2 ID
+    Description: Appliance VPC Appliance Route Table 2 ID
     Type: String
     ConstraintDescription: Must be a valid Route Table ID     
   # Spoke1 VPC Parameters:
