@@ -17,11 +17,11 @@
 ### **Appliance VPC:**
 * [GWLB Appliance VPC Sample](CentralizedArchitectureApplianceVpc2Az.yaml)
 
-### **Spoke1 VPC:**
-* [GWLB Spoke1 VPC Sample](CentralizedArchitectureSpoke1Vpc2Az.yaml)
+### **Spoke VPCs:**
+* We use the same spoke VPC template for both Spoke1 VPC and Spoke2 VPC. When deploying the template for Spoke2 VPC, make sure you have changed the default values so that Spoke2 VPC has different VPC and related subnet network addresses.
 
-### **Spoke2 VPC:**
-* [GWLB Spoke2 VPC Sample](CentralizedArchitectureSpoke2Vpc2Az.yaml)
+* [GWLB Spoke1 VPC Sample](CentralizedArchitectureSpokeVpc2Az.yaml)
+* [GWLB Spoke2 VPC Sample](CentralizedArchitectureSpokeVpc2Az.yaml)
 
 ### **Transit Gateway:**
 * [GWLB Transit Gateway Sample](CentralizedArchitectureTgw.yaml)
