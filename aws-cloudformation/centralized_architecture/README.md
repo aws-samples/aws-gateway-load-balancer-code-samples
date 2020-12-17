@@ -1,6 +1,6 @@
-### AWS Gateway Load Balancer In Centralized Architecture
+## AWS Gateway Load Balancer In Centralized Architecture
 
-## Welcome
+### Welcome
 
 * This section contains sample AWS Cloudformation templates that demonstrates how to create centralized inspection architecture using AWS Gateway Load Balancer (GWLB) AWS Gateway Load Balancer Endpoints (GWLBe), virtual appliances and AWS Transit Gateway (TGW) from templates that are written in YAML.
 
@@ -25,6 +25,7 @@
 
 ### **Transit Gateway:**
 * [GWLB Transit Gateway Sample](CentralizedArchitectureTgw.yaml)
+* Use appropriate values for the parameters. Use Appliance VPC and Spoke VPCs stack Outputs section to retrieve the values.
 
 ### Enable Transit Gateway Appliance Mode:
 
@@ -35,3 +36,6 @@ aws ec2 modify-transit-gateway-vpc-attachment \
     --transit-gateway-attachment-id <tgw-attach-0253EXAMPLE>
     --options ApplianceModeSupport=enable
 ```
+
+### Validation Steps:
+* [GWLB Centralized Architecture Validation](CentralizedArchitectureValidation.md)

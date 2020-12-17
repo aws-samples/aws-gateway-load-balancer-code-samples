@@ -135,7 +135,6 @@ Parameters:
     Type: String
     ConstraintDescription: Must be a valid Subnet ID  
   Spoke1VpcTgwAttachSubnet2Id:
-    Default: subnet-0eea8af201a4d315d
     Description: Spoke1 VPC Subnet2 ID for TGW attachment in AZ2
     Type: String
     ConstraintDescription: Must be a valid Subnet ID  

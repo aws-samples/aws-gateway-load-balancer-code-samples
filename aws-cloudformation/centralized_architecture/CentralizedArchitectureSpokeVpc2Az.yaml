@@ -526,7 +526,7 @@ Resources:
           yum install htop -y;
 
           # Configure hostname:
-          hostnamectl set-hostname gwlbe-bastion-host1;
+          hostnamectl set-hostname ${AWS::StackName}-bastion-host1;
 
           # Configure SSH client alive interval for ssh session timeout:
           echo 'ClientAliveInterval 60' | sudo tee --append /etc/ssh/sshd_config;

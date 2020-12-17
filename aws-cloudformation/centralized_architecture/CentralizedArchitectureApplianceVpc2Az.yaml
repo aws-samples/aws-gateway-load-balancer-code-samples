@@ -657,7 +657,7 @@ Resources:
           sysctl -p /etc/sysctl.d/00-defaults.conf          
 
           # Configure hostname:
-          hostnamectl set-hostname gwlb-appliance1;
+          hostnamectl set-hostname ${AWS::StackName}-appliance1;
           
           # Configure SSH client alive interval for ssh session timeout:
           echo 'ClientAliveInterval 60' | sudo tee --append /etc/ssh/sshd_config;
@@ -753,7 +753,7 @@ Resources:
           sysctl -p /etc/sysctl.d/00-defaults.conf
 
           # Configure hostname:
-          hostnamectl set-hostname gwlb-appliance2;
+          hostnamectl set-hostname ${AWS::StackName}-appliance2;
           
           # Configure SSH client alive interval for ssh session timeout:
           echo 'ClientAliveInterval 60' | sudo tee --append /etc/ssh/sshd_config;
@@ -842,7 +842,7 @@ Resources:
           yum install htop -y;
 
           # Configure hostname:
-          hostnamectl set-hostname gwlb-bastion-host;
+          hostnamectl set-hostname ${AWS::StackName}-bastion-host;
 
           # Configure SSH client alive interval for ssh session timeout:
           echo 'ClientAliveInterval 60' | sudo tee --append /etc/ssh/sshd_config;
