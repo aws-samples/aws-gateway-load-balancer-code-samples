@@ -63,7 +63,7 @@ Metadata:
       TgwAttachSubnet1Cidr:
         default: Spoke VPC - TGW Attachment Subnet 1 CIDR     
       AvailabilityZone2:
-        default: Public Availability Zone 2 CIDR
+        default: Spoke VPC - Availability Zone 2
       BastionSubnet2Cidr:
         default: Spoke VPC - Bastion Subnet 2 CIDR      
       ApplicationSubnet2Cidr:
