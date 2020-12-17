@@ -1,6 +1,6 @@
-### AWS CloudFormation samples for AWS Gateway Load Balancer (GWLB)
+## AWS CloudFormation samples for AWS Gateway Load Balancer (GWLB)
 
-## Welcome
+### Welcome
 
 * The following section contains sample AWS CloudFormation templates that demonstrate how to provision and manage AWS Gateway Load Balancer from templates that are written in YAML.
 
