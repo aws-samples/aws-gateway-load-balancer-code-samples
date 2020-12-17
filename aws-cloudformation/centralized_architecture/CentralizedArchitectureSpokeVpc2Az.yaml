@@ -4,7 +4,7 @@
 
 
 # For architecture details refer to blog:
-# https://aws.amazon.com/blogs/networking-and-content-delivery/building-a-centralized-inspection-architecture-with-AWS-Gateway-Load-Balancer-and-AWS-Transit-Gateway
+# https://aws.amazon.com/blogs/networking-and-content-delivery/centralized-inspection-architecture-with-aws-gateway-load-balancer-and-aws-transit-gateway/
 
 AWSTemplateFormatVersion: "2010-09-09"
 

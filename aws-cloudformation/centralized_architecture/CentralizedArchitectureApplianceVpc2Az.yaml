@@ -2,7 +2,7 @@
 # Appliance VPC for centralized architecture using AWS CloudFormation. 
 
 # For architecture details refer to blog:
-# https://aws.amazon.com/blogs/networking-and-content-delivery/building-a-centralized-inspection-architecture-with-AWS-Gateway-Load-Balancer-and-AWS-Transit-Gateway
+# https://aws.amazon.com/blogs/networking-and-content-delivery/centralized-inspection-architecture-with-aws-gateway-load-balancer-and-aws-transit-gateway/
 
 # Template uses Amazon Linux 2 instances as appliances behind the GWLB.
 # Configures iptables on instances for hairpin setup. The hairpin setup 

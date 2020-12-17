@@ -3,7 +3,7 @@
 # AWS Gateway Load Balancer (GWLB) using AWS CloudFormation.
 
 # For architecture details refer to blog:
-# https://aws.amazon.com/blogs/networking-and-content-delivery/building-a-centralized-inspection-architecture-with-AWS-Gateway-Load-Balancer-and-AWS-Transit-Gateway
+# https://aws.amazon.com/blogs/networking-and-content-delivery/centralized-inspection-architecture-with-aws-gateway-load-balancer-and-aws-transit-gateway/
 
 AWSTemplateFormatVersion: "2010-09-09"
 
@@ -100,33 +100,27 @@ Metadata:
 Parameters:
   # Appliance VPC Parameters:
   ApplianceVpcId:
-    Default: vpc-0fe10a202952d5748
     Description: Appliance VPC ID
     Type: String
     ConstraintDescription: Must be a valid VPC ID  
   ApplianceVpcTgwAttachSubnet1Id:
-    Default: subnet-034374808d30d1dc8
     Description: Appliance VPC Subnet1 ID for TGW attachment in AZ1
     Type: String
     ConstraintDescription: Must be a valid Subnet ID    
   ApplianceVpcTgwAttachSubnet2Id:
-    Default: subnet-035803d2038cf33de
     Description: Appliance VPC Subnet2 ID for TGW attachment in AZ2
     Type: String
     ConstraintDescription: Must be a valid Subnet ID  
   ApplianceVpcApplianceRtb1Id:
-    Default: rtb-0fedc2a9b5a8a7283
     Description: Appliance VPC GWLB Route Table 1 ID
     Type: String
     ConstraintDescription: Must be a valid Route Table ID    
   ApplianceVpcApplianceRtb2Id:
-    Default: rtb-0c6e21e6f54bf62df
     Description: Appliance VPC GWLB Route Table 2 ID
     Type: String
     ConstraintDescription: Must be a valid Route Table ID     
   # Spoke1 VPC Parameters:
   Spoke1VpcId:
-    Default: vpc-0d450499e74625d59
     Description: Spoke1 VPC ID
     Type: String
     ConstraintDescription: Must be a valid VPC ID
@@ -135,9 +129,8 @@ Parameters:
     Default: 10.0.0.0/24
     Description: Spoke1 VPC Network CIDR
     Type: String
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/25    
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/y   
   Spoke1VpcTgwAttachSubnet1Id:
-    Default: subnet-05a36a949eb4078dc
     Description: Spoke1 VPC Subnet1 ID for TGW attachment in AZ1
     Type: String
     ConstraintDescription: Must be a valid Subnet ID  
@@ -147,13 +140,11 @@ Parameters:
     Type: String
     ConstraintDescription: Must be a valid Subnet ID  
   Spoke1VpcRtb1Id:
-    Default: rtb-0202579e4cb212824
     Description: Spoke1 VPC Application Route Table ID
     Type: String
     ConstraintDescription: Must be a valid Route Table ID
   # Spoke2 VPC Parameters:
   Spoke2VpcId:
-    Default: vpc-06afcf3ee4f96825c
     Description: Spoke2 VPC ID
     Type: String
     ConstraintDescription: Must be a valid VPC ID
@@ -162,19 +153,16 @@ Parameters:
     Default: 10.0.1.0/24
     Description: Spoke2 VPC Network CIDR
     Type: String
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/25    
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/y  
   Spoke2VpcTgwAttachSubnet1Id:
-    Default: subnet-08171c63f3c467f00
     Description: Spoke2 VPC Subnet1 ID for TGW attachment in AZ1
     Type: String
     ConstraintDescription: Must be a valid Subnet ID  
   Spoke2VpcTgwAttachSubnet2Id:
-    Default: subnet-0396cc5bebbbfb05b
     Description: Spoke2 VPC Subnet2 ID for TGW attachment in AZ2
     Type: String
     ConstraintDescription: Must be a valid Subnet ID  
   Spoke2VpcRtb1Id:
-    Default: rtb-019deb197a0e393ab
     Description: Spoke2 VPC Application Route Table ID
     Type: String
     ConstraintDescription: Must be a valid Route Table ID  
@@ -378,110 +366,10 @@ Resources:
       TransitGatewayId: !Ref Tgw1
       RouteTableId: !Ref Spoke2VpcRtb1Id 
 
-# Create Transit Gateway Lambda:
-
-  # LambdaExecutionRole:
-  #   Type: AWS::IAM::Role
-  #   Properties:
-  #     AssumeRolePolicyDocument:
-  #       Version: 2012-10-17
-  #       Statement:
-  #         - Effect: Allow
-  #           Principal:
-  #             Service:
-  #               - lambda.amazonaws.com
-  #           Action:
-  #             - sts:AssumeRole
-  #     Path: /
-  #     Policies:
-  #       - PolicyName: root
-  #         PolicyDocument:
-  #           Version: 2012-10-17
-  #           Statement:
-  #             - Effect: Allow
-  #               Action:
-  #                 - logs:CreateLogGroup
-  #                 - logs:CreateLogStream
-  #                 - logs:PutLogEvents
-  #               Resource: arn:aws:logs:*:*:*
-  #             - Effect: Allow
-  #               Action:
-  #                 - ec2:ModifyTransitGatewayVpcAttachment 
-  #               Resource: "*"
-
-  # ModifyTgwApplianceMode:
-  #   Type: AWS::Lambda::Function
-  #   Properties:
-  #     Handler: "index.handler"
-  #     Role: !GetAtt
-  #       - LambdaExecutionRole
-  #       - Arn
-  #     Code:
-  #       ZipFile: !Sub |
-  #         import json
-  #         import logging
-  #         import time
-
-  #         import boto3
-  #         import cfnresponse
-  #         from botocore.exceptions import ClientError
-
-  #         try:
-  #             ec2 = boto3.client('ec2')
-  #         except ClientError as e:
-  #             logger.error(f"ERROR: failed to connect to EC2 client: {e}")
-  #             sys.exit(1)              
-
-  #         def handler(event, context):
-  #             logger = logging.getLogger()
-  #             logger.setLevel(logging.INFO)
-  #             logger.info('Received event: {}'.format(json.dumps(event)))
-
-  #             responseData = {}
-  #             responseStatus = cfnresponse.FAILED
-
-  #             try:
-  #                 tgwattachid = "${Tgw1ApplianceVpcAttachment}"
-  #                 appliancemode = event["ResourceProperties"]["TgwApplianceMode"]
-  #                 print(f"TGW ATTACH ID: {tgwattachid}")
-  #             except Exception:
-  #                 logger.exception("Could not retrieve variables, signaling failure to CloudFormation.".format(e))
-  #                 cfnresponse.send(event, context, cfnresponse.FAILED, {})
-
-  #             try:
-  #                 if event["RequestType"] == "Delete":    
-  #                     responseStatus = cfnresponse.SUCCESS
-  #                     cfnresponse.send(event, context, responseStatus, responseData)
-  #             except Exception:
-  #                 logger.exception("Signaling failure to CloudFormation.")
-  #                 cfnresponse.send(event, context, cfnresponse.FAILED, {})
-
-  #             if event["RequestType"] == "Create":
-  #                 logger.info(f"Modifying TGW VPC Attachment: {tgwattachid} appliance mode to: {appliancemode}")
-  #                 try:
-  #                     print(f"INSIDE CREATE, TGW ATTACH ID: {tgwattachid}")
-  #                     response = ec2.modify_transit_gateway_vpc_attachment(
-  #                         TransitGatewayAttachmentId=tgwattachid,
-  #                         Options={'ApplianceModeSupport': appliancemode}
-  #                     )
-  #                 except Exception as e:
-  #                     logger.info('ec2.modify_transit_gateway_vpc_attachment: {}'.format(e))
-
-  #                 responseStatus = cfnresponse.SUCCESS
-  #                 cfnresponse.send(event, context, responseStatus, responseData)
-  #     Runtime: python3.7
-  #     Timeout: 30
-
-  # EditTgwApplianceMode:
-  #   Type: Custom::ModifyTgwApplianceMode
-  #   Properties:
-  #     ServiceToken: !GetAtt ModifyTgwApplianceMode.Arn
-  #     TgwApplianceMode: enable
-
 Outputs:
   TgwId:
     Description: TGW ID
     Value: !Ref Tgw1
-  # TgwApplianceModeStatus:
-  #   Description: TGW Appliance Mode Status
-  #   Value: !GetAtt EditTgwApplianceMode.TgwApplianceMode
+  TgwApplianceVpcAttachmendId:
+    Description: Appliance VPC Attachment ID
+    Value: !Ref Tgw1ApplianceVpcAttachment
