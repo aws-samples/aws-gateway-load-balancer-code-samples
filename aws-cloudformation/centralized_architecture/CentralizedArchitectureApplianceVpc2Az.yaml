@@ -641,7 +641,7 @@ Resources:
             - - !Ref 'AWS::StackName'
               - '-appliance1'
       UserData:
-        Fn::Base64: |
+        Fn::Base64: !Sub |
           #!/bin/bash -ex
           
           # Install packages:
@@ -737,7 +737,7 @@ Resources:
             - - !Ref 'AWS::StackName'
               - '-appliance2'
       UserData:
-        Fn::Base64: |
+        Fn::Base64: !Sub |
           #!/bin/bash -ex
           
           # Install packages:
@@ -834,7 +834,7 @@ Resources:
             - - !Ref 'AWS::StackName'
               - '-bastion-host'
       UserData:
-        Fn::Base64: |
+        Fn::Base64: !Sub |
           #!/bin/bash -ex
 
           # Install packages:
