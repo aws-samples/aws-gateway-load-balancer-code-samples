@@ -50,10 +50,6 @@ Metadata:
           - ApplicationInstanceDiskSize
           - KeyPairName
           - AccessLocation
-      # - Label:
-      #     default: Bastion Configuration
-      #   Parameters:
-      #     - CreateBastionCondition
 
     ParameterLabels:
       VpcCidr:
@@ -84,8 +80,6 @@ Metadata:
         default: KeyPair required for accessing application instance
       AccessLocation:
         default: Network CIDR to access application instance
-      # CreateBastionCondition:
-      #   default: Create Bastion Host Condition
 
 Parameters:
   VpcCidr:
@@ -167,19 +161,6 @@ Parameters:
     Default: 0.0.0.0/0
     Type: String
     ConstraintDescription: Must be a valid Network CIDR of the form x.x.x.x/y
-  # CreateBastionCondition:
-  #   Description: >- 
-  #     Do you want to create bastion setup? If yes, template creates bastion
-  #     host and bastion security group
-  #   Default: "Yes"
-  #   AllowedValues: ["Yes", "No"]
-  #   Type: String
-  #   ConstraintDescription: Must be a valid Yes or No option
-
-# Conditions:
-#   CreateBastion: !Equals
-#     - !Ref CreateBastionCondition
-#     - "Yes"
 
 Resources:
 # Create VPC:
@@ -479,12 +460,9 @@ Resources:
           touch /home/ec2-user/.vimrc;
           echo "set background=dark" >> /home/ec2-user/.vimrc;
 
-# If CreatedBastioCondition is set to "Yes", create Bastion Host and related resources:
-
 # Create security group for bastion host:
   BastionSg:
     Type: AWS::EC2::SecurityGroup
-    # Condition: CreateBastion
     Properties:
       VpcId: !Ref Vpc
       GroupName: !Join
@@ -521,7 +499,6 @@ Resources:
 
 # Create Bastion Host (creates only one bastion host in one AZ):
   BastionHost:
-    # Condition: CreateBastion
     Type: AWS::EC2::Instance
     Properties:
       ImageId: !Ref ApplicationInstanceAmiId
@@ -561,7 +538,6 @@ Resources:
 
 # Edit applicaiton security group to allow access from bastion host:
   ApplicationSgIngress:
-    # Condition: CreateBastion
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       GroupId: !Ref ApplicationSg
@@ -577,6 +553,12 @@ Outputs:
   SpokeVpcId:
     Description: Spoke VPC ID
     Value: !Ref Vpc
+  SpokeApplication1PrivateIp:
+    Description: Spoke VPC Application Instance Private IP
+    Value: !GetAtt Application1.PrivateIp
+  SpokeApplication2PrivateIp:
+    Description: Spoke VPC Application Instance Private IP
+    Value: !GetAtt Application2.PrivateIp      
   SpokeApplication1PublicIp:
     Description: Spoke VPC Application Instance Public IP
     Value: !GetAtt Application1.PublicIp
@@ -584,7 +566,6 @@ Outputs:
     Description: Spoke VPC Application Instance Public IP
     Value: !GetAtt Application2.PublicIp    
   SpokeBastionHostPublicIp:
-    Condition: CreateBastion
     Description: Spoke VPC Bastion Instance Public IP
     Value: !GetAtt BastionHost.PublicIp
   SpokeTgwAttachSubnet1Id:
