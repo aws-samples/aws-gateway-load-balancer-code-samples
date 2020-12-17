@@ -1,6 +1,7 @@
-* Following example shows how to create VPC Endpoint Service using Gateway Load Balancer ARN using AWS CloudFormation. It also creates custom resource to output the service name.
+# Following example shows how to create VPC Endpoint Service using
+# Gateway Load Balancer ARN using AWS CloudFormation. It also creates custom
+# resource to output the service name.
 
-```yaml
 AWSTemplateFormatVersion: "2010-09-09"
 
 Description: This template creates Amazon VPC Endpoint Service.
@@ -163,4 +164,3 @@ Outputs:
   SecurityVpcEndpointServiceName:
     Description: Security VPC Endpoint Service Name. Required to create VPC endpoint
     Value: !GetAtt VpceServiceName.Data
-```

@@ -1,25 +1,23 @@
-### AWS Gateway Load Balancer In Centralized Architecture
+### AWS CloudFormation samples for AWS Gateway Load Balancer (GWLB)
 
 ## Welcome
 
-* This section contains sample AWS Cloudformation templates that demonstrates how to create centralized inspection architecture using AWS Gateway Load Balancer (GWLB) AWS Gateway Load Balancer Endpoints (GWLBe), virtual appliances and AWS Transit Gateway (TGW) from templates that are written in YAML.
+* The following section contains sample AWS CloudFormation templates that demonstrate how to provision and manage AWS Gateway Load Balancer from templates that are written in YAML.
 
-![](images/gwlb_centralized_architecture.jpg)
+* More [AWS CloudFormation Templates](https://aws.amazon.com/cloudformation/resources/templates/) are available in the [AWS CloudFormation User Guide](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-sample-templates.html)
 
-* **Launch CloudFormation templates in following order:**
-  1. Appliance VPC Template
-  2. Spoke1 VPC Template
-  3. Spoke2 VPC Template
-  4. TGW Template. TGW Template is dependent on Appliance VPC, Spoke1 VPC and Spoke2 VPC templates. Template will fail if launch before successfuly deployments of above 3 templates.
+* For more information about developing application using AWS CloudFormation, see the [AWS CloudFormation User Guide](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html)
 
-### **Appliance VPC:**
-* [GWLB Appliance VPC Sample](CentralizedArchitectureApplianceVpc2Az.yaml)
+### **GWLB:**
 
-### **Spoke1 VPC:**
-* [GWLB Spoke1 VPC Sample](CentralizedArchitectureSpoke1Vpc2Az.yaml)
+* [GWLB Sample](gwlb/GwlbWithTargetGroupAndListenerSample.yaml)
 
-### **Spoke2 VPC:**
-* [GWLB Spoke2 VPC Sample](CentralizedArchitectureSpoke2Vpc2Az.yaml)
+### **GWLB VPC Endpoint Service:**
+* [GWLB VPC Endpoint Service Sample](vpce/GwlbVpcEndpointServiceSample.yaml)
 
-### **TGW:**
-* [GWLB TGW Sample](CentralizedArchitectureTgw.yaml)
+### **GWLB VPC Endpoint:**
+* [GWLB VPC Endpoint Sample](vpce/GwlbVpcEndpointSample.yaml)
+
+### **GWLB Architectures**
+* [GWLB Distributed Architecture](distributed_architecture/)
+* [GWLB Centralized Architecture](centralized_architecture/)

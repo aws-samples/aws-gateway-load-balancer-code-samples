@@ -1,6 +1,6 @@
-* Following example shows how to create Gateway Load Balancer Endpoint using VPC Endpoint Service name using AWS CloudFormation. 
+# Following example shows how to create Gateway Load Balancer Endpoint using
+# VPC Endpoint Service name using AWS CloudFormation. 
 
-```yaml
 AWSTemplateFormatVersion: '2010-09-09'
 
 Description: >-
@@ -57,4 +57,3 @@ Outputs:
   GwlbVpcEndpointId:
     Description: Gateway Load Balancer VPC Endpoint ID
     Value: !Ref GwlbVpcEndpoint
-```
