@@ -25,11 +25,17 @@
 
 ### **Transit Gateway:**
 * [GWLB Transit Gateway Sample](CentralizedArchitectureTgw.yaml)
-* Use appropriate values for the parameters. Use Appliance VPC and Spoke VPCs stack Outputs section to retrieve the values.
+  * Use appropriate values for the parameters. 
+  * Use Appliance VPC and Spoke VPCs stack Outputs section to retrieve the values.
+  * Template enables Transit Gateway appliance mode.
 
 ### Enable Transit Gateway Appliance Mode:
 
-To ensure flow symmetry, Transit Gateway appliance mode should be enabled on the Appliance VPC’s attachment. Once Transit Gateway template has been successfully deployed, fetch the Appliance VPC Attachment ID from stack's Outputs tab and enable applince mode using AWS CLI as shown below. Replace the parameter values inside '< >' with appropriate values.
+To ensure flow symmetry, Transit Gateway appliance mode should be enabled on the Appliance VPC’s attachment. 
+
+[GWLB Transit Gateway Sample](CentralizedArchitectureTgw.yaml) enables appliance mode for the Appliance VPC attachment. 
+
+You can also enable/disable appliance mode using AWS CLI. Once Transit Gateway template has been successfully deployed, fetch the Appliance VPC Attachment ID from stack's Outputs tab and enable/disable applince mode using AWS CLI as shown below. Replace the parameter values inside '< >' with appropriate values.
 
 ```bash
 aws ec2 modify-transit-gateway-vpc-attachment \
