@@ -21,7 +21,7 @@ Description: >-
   This template creates:
     - 1 VPC
     - 1 IGW
-    - 2 NAT gateway
+    - 2 NAT gateways
     - 6 subnets, 3 in each Availability Zone (AZ)
     - 6 route tables, 3 in each AZ
     - 1 Security group
@@ -242,6 +242,9 @@ Parameters:
     ConstraintDescription: Must be a valid health check port    
 
 Resources:
+
+# Create VPC, IGW and associate IGW with VPC:
+
   Vpc:
     Type: AWS::EC2::VPC
     Properties:
@@ -274,6 +277,7 @@ Resources:
 
 # Create Subnets:
 
+  # AZ1:
   TgwAttachSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -283,10 +287,7 @@ Resources:
       MapPublicIpOnLaunch: "true"
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-tgw-attach-subnet1"
+          Value: !Sub "${AWS::StackName}-tgw-attach-subnet-1"
 
   ApplianceSubnet1:
     Type: AWS::EC2::Subnet
@@ -297,10 +298,7 @@ Resources:
       MapPublicIpOnLaunch: "true"
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-applinace-subnet1"
+          Value: !Sub "${AWS::StackName}-applinace-subnet-1"
 
   NatgwSubnet1:
     Type: AWS::EC2::Subnet
@@ -311,11 +309,9 @@ Resources:
       MapPublicIpOnLaunch: "true"
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-natgw-subnet1"
+          Value: !Sub "${AWS::StackName}-natgw-subnet-1"
   
+  # AZ2:
   TgwAttachSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
@@ -325,10 +321,7 @@ Resources:
       MapPublicIpOnLaunch: "true"
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-tgw-attach-subnet2"
+          Value: !Sub "${AWS::StackName}-tgw-attach-subnet-2"
 
   ApplianceSubnet2:
     Type: AWS::EC2::Subnet
@@ -339,10 +332,7 @@ Resources:
       MapPublicIpOnLaunch: "true"
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-appliance-subnet2"
+          Value: !Sub "${AWS::StackName}-appliance-subnet-2"
 
   NatgwSubnet2:
     Type: AWS::EC2::Subnet
@@ -353,22 +343,15 @@ Resources:
       MapPublicIpOnLaunch: "true"
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-natgw-subnet2"
+          Value: !Sub "${AWS::StackName}-natgw-subnet-2"
 
 # Create NAT Gateways:
 
+  # AZ1:
   Eip1:
     Type: AWS::EC2::EIP
     Properties:
-      Domain: Vpc
-
-  Eip2:
-    Type: AWS::EC2::EIP
-    Properties:
-      Domain: Vpc
+      Domain: vpc
 
   Natgw1:
     Type: AWS::EC2::NatGateway
@@ -379,10 +362,13 @@ Resources:
       SubnetId: !Ref NatgwSubnet1
       Tags:
       - Key: Name
-        Value: !Join
-          - ''
-          - - !Ref 'AWS::StackName'
-            - '-natgw1'
+        Value: !Sub "${AWS::StackName}-natgw-1"
+
+  # AZ2:
+  Eip2:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
 
   Natgw2:
     Type: AWS::EC2::NatGateway
@@ -393,23 +379,18 @@ Resources:
       SubnetId: !Ref NatgwSubnet2
       Tags:
       - Key: Name
-        Value: !Join
-          - ''
-          - - !Ref 'AWS::StackName'
-            - '-natgw2'
+        Value: !Sub "${AWS::StackName}-natgw-2"
 
 # Create Route Tables: 
 
+  # AZ1:
   TgwAttachRouteTable1:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-tgw-attach-rtb1"  
+          Value: !Sub "${AWS::StackName}-tgw-attach-rtb-1"
 
   ApplianceRouteTable1:
     Type: AWS::EC2::RouteTable
@@ -417,10 +398,7 @@ Resources:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-appliance-rtb1"
+          Value: !Sub "${AWS::StackName}-appliance-rtb-1"
 
   NatGwRouteTable1:
     Type: AWS::EC2::RouteTable
@@ -428,21 +406,16 @@ Resources:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-natgw-rtb1"
+          Value: !Sub "${AWS::StackName}-natgw-rtb-1"
 
+  # AZ2:
   TgwAttachRouteTable2:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-tgw-attach-rtb2"  
+          Value: !Sub "${AWS::StackName}-tgw-attach-rtb-2"
 
   ApplianceRouteTable2:
     Type: AWS::EC2::RouteTable
@@ -450,10 +423,7 @@ Resources:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-appliance-rtb2"
+          Value: !Sub "${AWS::StackName}-appliance-rtb-2"
 
   NatGwRouteTable2:
     Type: AWS::EC2::RouteTable
@@ -461,13 +431,11 @@ Resources:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-natgw-rtb2"
+          Value: !Sub "${AWS::StackName}-natgw-rtb-2"
 
 # Associate Subnets with appropriate Route Tables:
 
+  # AZ1:
   TgwAttachSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -486,6 +454,7 @@ Resources:
       SubnetId: !Ref NatgwSubnet1
       RouteTableId: !Ref NatGwRouteTable1
 
+  # AZ2:
   TgwAttachSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -510,10 +479,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !Ref Vpc
-      GroupName: !Join
-        - ""
-        - - !Ref AWS::StackName
-          - "-bastion-sg"
+      GroupName: !Sub "${AWS::StackName}-bastion-sg"
       GroupDescription: >-
         Access to bastion instance: allow SSH and ICMP access from appropriate location.
         Allow all traffic from VPC CIDR
@@ -537,19 +503,13 @@ Resources:
           ToPort: -1
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-bastion-sg"
+          Value: !Sub "${AWS::StackName}-bastion-sg"
 
   ApplianceSg:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !Ref Vpc
-      GroupName: !Join
-        - ""
-        - - !Ref AWS::StackName
-          - "-appliance-sg"
+      GroupName: !Sub "${AWS::StackName}-appliance-sg"
       GroupDescription: >-
         Access to Appliance instance: allow SSH and ICMP access from Bastion SG.
         Allow all traffic from VPC CIDR
@@ -577,10 +537,7 @@ Resources:
           ToPort: -1
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-appliance-sg"
+          Value: !Sub "${AWS::StackName}-appliance-sg"
 
 # Create Appliances and related resources:
 
@@ -636,10 +593,7 @@ Resources:
             VolumeSize: !Ref ApplianceInstanceDiskSize
       Tags:
         - Key: Name
-          Value: !Join
-            - ''
-            - - !Ref 'AWS::StackName'
-              - '-appliance1'
+          Value: !Sub "${AWS::StackName}-appliance-1"
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash -ex
@@ -732,10 +686,7 @@ Resources:
             VolumeSize: !Ref ApplianceInstanceDiskSize
       Tags:
         - Key: Name
-          Value: !Join
-            - ''
-            - - !Ref 'AWS::StackName'
-              - '-appliance2'
+          Value: !Sub "${AWS::StackName}-appliance-2"
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash -ex
@@ -829,10 +780,7 @@ Resources:
             VolumeSize: !Ref ApplianceInstanceDiskSize
       Tags:
         - Key: Name
-          Value: !Join
-            - ''
-            - - !Ref 'AWS::StackName'
-              - '-bastion-host'
+          Value: !Sub "${AWS::StackName}-bastion-host"
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash -ex
@@ -864,10 +812,7 @@ Resources:
         - !Ref ApplianceSubnet2
       Tags:
       - Key: Name
-        Value: !Join
-          - ""
-          - - !Ref AWS::StackName
-            - "-gwlb1"
+        Value: !Sub "${AWS::StackName}-gwlb-1"
 
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -887,10 +832,7 @@ Resources:
         - Id: !Ref Appliance2
       Tags:
       - Key: Name
-        Value: !Join
-          - ""
-          - - !Ref AWS::StackName
-            - "-gwlb1-tg1"
+        Value: !Sub "${AWS::StackName}-gwlbtg-1"
 
   Listener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -909,9 +851,9 @@ Resources:
         - !Ref Gwlb
       AcceptanceRequired: false
 
-# Create Lambda to retrieve VPC Endpoint Service Name, TGW ARN and TGW ENIs:
+# Create Lambda Custom Resource to retrieve VPC Endpoint Service Name:
 
-  LambdaExecutionRole:
+  VpceServiceLambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -940,17 +882,25 @@ Resources:
                   - ec2:DescribeVpcEndpointServiceConfigurations
                   - ec2:DescribeVpcEndpointServicePermissions
                   - ec2:DescribeVpcEndpointServices
-                  - ec2:DescribeTransitGateways
-                  - ec2:DescribeNetworkInterfaces
                 Resource: "*"
+
+  # Lambda creates CloudWatch Log Group.
+  # Since CF stack didn't explicitly create the Log Group, Log Group doesn't get deleted when stack is deleted.
+  # Hence creating Log Group though the stack for Lambda specific funciton.
+  # Their are few things to consider. For more details refer to: https://github.com/aws/serverless-application-model/issues/1216
+  VpceServiceLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+        LogGroupName: !Sub /aws/lambda/${AWS::StackName}-vpce-service
+        RetentionInDays: 1
 
   VpceServiceName:
     Type: AWS::Lambda::Function
+    DependsOn: VpceServiceLogGroup
     Properties:
+      FunctionName: !Sub ${AWS::StackName}-vpce-service
       Handler: "index.handler"
-      Role: !GetAtt
-        - LambdaExecutionRole
-        - Arn
+      Role: !GetAtt VpceServiceLambdaExecutionRole.Arn
       Code:
         ZipFile: |
           import json
@@ -1038,7 +988,8 @@ Resources:
       SubnetIds:
         - !Ref ApplianceSubnet2
 
-# Create appropriate routes for appropriate route tables:
+# Create appropriate routes for appropriate route tables. Routes with TGW as target are added through TGW template.
+  # AZ1:
   NatgwRtb1IgwRoute:
     Type: AWS::EC2::Route
     DependsOn: AttachInternetGateway
@@ -1060,7 +1011,7 @@ Resources:
     DependsOn: GwlbEndpoint2
     Properties:
       DestinationCidrBlock: !Ref Spoke2VpcCidr
-      VpcEndpointId: !Ref GwlbEndpoint2
+      VpcEndpointId: !Ref GwlbEndpoint1
       RouteTableId: !Ref NatGwRouteTable1
 
   ApplianceRtb1Natgw1Route:
@@ -1079,6 +1030,7 @@ Resources:
       VpcEndpointId: !Ref GwlbEndpoint1
       RouteTableId: !Ref TgwAttachRouteTable1
 
+  # AZ2:
   NatgwRtb2IgwRoute:
     Type: AWS::EC2::Route
     DependsOn: AttachInternetGateway
@@ -1092,7 +1044,7 @@ Resources:
     DependsOn: GwlbEndpoint1
     Properties:
       DestinationCidrBlock: !Ref Spoke1VpcCidr
-      VpcEndpointId: !Ref GwlbEndpoint1
+      VpcEndpointId: !Ref GwlbEndpoint2
       RouteTableId: !Ref NatGwRouteTable2
 
   NatgwRtb2Gwlbe2Route:

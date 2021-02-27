@@ -190,10 +190,7 @@ Resources:
       DnsSupport: enable
       Tags:
         - Key: Name
-          Value: !Join
-            - ''
-            - - !Ref 'AWS::StackName'
-              - '-tgw1'
+          Value: !Sub "${AWS::StackName}-tgw-1"
       VpnEcmpSupport: enable
 
 # Create Transit Gateway Attachments:
@@ -207,10 +204,7 @@ Resources:
       VpcId: !Ref ApplianceVpcId
       Tags:
         - Key: Name
-          Value: !Join
-            - ''
-            - - !Ref 'AWS::StackName'
-              - '-appliance-vpc-attachment'
+          Value: !Sub "${AWS::StackName}-appliance-vpc-attachment"
 
   Tgw1Spoke1VpcAttachment:
     Type: AWS::EC2::TransitGatewayAttachment
@@ -222,10 +216,7 @@ Resources:
       VpcId: !Ref Spoke1VpcId
       Tags:
         - Key: Name
-          Value: !Join
-            - ''
-            - - !Ref 'AWS::StackName'
-              - '-spoke1-vpc-attachment'
+          Value: !Sub "${AWS::StackName}-spoke1-vpc-attachment"
 
   Tgw1Spoke2VpcAttachment:
     Type: AWS::EC2::TransitGatewayAttachment
@@ -237,10 +228,7 @@ Resources:
       VpcId: !Ref Spoke2VpcId
       Tags:
         - Key: Name
-          Value: !Join
-            - ''
-            - - !Ref 'AWS::StackName'
-              - '-spoke2-vpc-attachment'
+          Value: !Sub "${AWS::StackName}-spoke2-vpc-attachment"
 
 # Create Transit Gateway Route Tables:
   Tgw1TransitRtb:
@@ -248,10 +236,7 @@ Resources:
     Properties: 
       Tags: 
         - Key: Name
-          Value: !Join
-            - ''
-            - - !Ref 'AWS::StackName'
-              - '-tgw-transit-rtb'        
+          Value: !Sub "${AWS::StackName}-tgw-transit-rtb"   
       TransitGatewayId: !Ref Tgw1
 
   Tgw1EgressRtb:
@@ -259,10 +244,7 @@ Resources:
     Properties: 
       Tags: 
         - Key: Name
-          Value: !Join
-            - ''
-            - - !Ref 'AWS::StackName'
-              - '-tgw-egress-rtb' 
+          Value: !Sub "${AWS::StackName}-tgw-egress-rtb"
       TransitGatewayId: !Ref Tgw1
 
 # Create Transit Gateway Attachment Associations:
@@ -307,8 +289,12 @@ Resources:
       TransitGatewayRouteTableId: !Ref Tgw1EgressRtb
 
 # Add TGW as Target to VPC Route Tables:
+  # Appliance VPC route table configuration:
+  # AZ1:
   AddRoute1ApplianceVpc:
-    DependsOn: [Tgw1, Tgw1ApplianceVpcAttachment]
+    DependsOn:
+      - Tgw1
+      - Tgw1ApplianceVpcAttachment     
     Type: AWS::EC2::Route
     Properties:
       DestinationCidrBlock: !Ref Spoke1VpcCidr
@@ -316,19 +302,15 @@ Resources:
       RouteTableId: !Ref ApplianceVpcApplianceRtb1Id
 
   AddRoute2ApplianceVpc:
-    DependsOn: 
-      - Tgw1
-      - Tgw1ApplianceVpcAttachment  
+    DependsOn: [Tgw1, Tgw1ApplianceVpcAttachment]  
     Type: AWS::EC2::Route
     Properties:
       DestinationCidrBlock: !Ref Spoke2VpcCidr
       TransitGatewayId: !Ref Tgw1
       RouteTableId: !Ref ApplianceVpcApplianceRtb1Id
-  
+  # AZ2:
   AddRoute3ApplianceVpc:
-    DependsOn: 
-      - Tgw1
-      - Tgw1ApplianceVpcAttachment  
+    DependsOn: [Tgw1, Tgw1ApplianceVpcAttachment] 
     Type: AWS::EC2::Route
     Properties:
       DestinationCidrBlock: !Ref Spoke1VpcCidr
@@ -336,34 +318,132 @@ Resources:
       RouteTableId: !Ref ApplianceVpcApplianceRtb2Id
 
   AddRoute4ApplianceVpc:
-    DependsOn: 
-      - Tgw1
-      - Tgw1ApplianceVpcAttachment  
+    DependsOn: [Tgw1, Tgw1ApplianceVpcAttachment] 
     Type: AWS::EC2::Route
     Properties:
       DestinationCidrBlock: !Ref Spoke2VpcCidr
       TransitGatewayId: !Ref Tgw1
       RouteTableId: !Ref ApplianceVpcApplianceRtb2Id  
   
+  # Spoke1 VPC route table configuration:
   AddRoute1Spoke1Vpc:
-    DependsOn: 
-      - Tgw1
-      - Tgw1Spoke1VpcAttachment
+    DependsOn: [Tgw1, Tgw1Spoke1VpcAttachment]
     Type: AWS::EC2::Route
     Properties:
       DestinationCidrBlock: !Ref AccessLocation
       TransitGatewayId: !Ref Tgw1
       RouteTableId: !Ref Spoke1VpcRtb1Id 
 
+  # Spoke2 VPC route table configuration:
   AddRoute1Spoke2Vpc:
-    DependsOn: 
-      - Tgw1
-      - Tgw1Spoke1VpcAttachment  
+    DependsOn: [Tgw1, Tgw1Spoke1VpcAttachment]
     Type: AWS::EC2::Route
     Properties:
       DestinationCidrBlock: !Ref AccessLocation
       TransitGatewayId: !Ref Tgw1
-      RouteTableId: !Ref Spoke2VpcRtb1Id 
+      RouteTableId: !Ref Spoke2VpcRtb1Id
+
+# To ensure flow symmetry, Transit Gateway appliance mode is enabled on the Inspection VPC’s attachment.
+# For more details on Transit Gateway appliance mode, refer to:
+# https://aws.amazon.com/blogs/networking-and-content-delivery/centralized-inspection-architecture-with-aws-gateway-load-balancer-and-aws-transit-gateway/
+# https://docs.aws.amazon.com/vpc/latest/tgw/transit-gateway-appliance-scenario.html
+# CloudFormation yet does not support enabling appliance mode. Hence need to enable it using Lambda custom resource:
+
+# Transit Gateway appliance mode Lambda Role:
+  TgwLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-${AWS::Region}-tgw-lambda-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !GetAtt TgwApplianceModeLogGroup.Arn
+              - Effect: Allow
+                Action:
+                  - ec2:ModifyTransitGatewayVpcAttachment
+                  - ec2:DescribeTransitGatewayVpcAttachments
+                Resource: "*"
+
+# Enable Transit Gateway Appliance Mode Lambda Custom Resource:
+  TgwApplianceModeLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+        LogGroupName: !Sub /aws/lambda/${AWS::StackName}-tgw-appliancemode
+        RetentionInDays: 1
+
+  TgwApplianceMode:
+    Type: AWS::Lambda::Function
+    DependsOn: TgwApplianceModeLogGroup
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-tgw-appliancemode
+      Handler: "index.handler"
+      Role: !GetAtt TgwLambdaExecutionRole.Arn
+      Code:
+        ZipFile: |
+          import boto3
+          import cfnresponse
+          import json
+          import logging
+
+          def handler(event, context):
+              logger = logging.getLogger()
+              logger.setLevel(logging.INFO)
+              responseData = {}
+              responseStatus = cfnresponse.FAILED
+              logger.info('Received event: {}'.format(json.dumps(event)))
+              if event["RequestType"] == "Delete":
+                  responseStatus = cfnresponse.SUCCESS
+                  cfnresponse.send(event, context, responseStatus, responseData)
+              if event["RequestType"] == "Create":
+                  try:
+                      TgwInspectionVpcAttachmentId = event["ResourceProperties"]["TgwInspectionVpcAttachmentId"]
+                      ApplianceMode = event["ResourceProperties"]["ApplianceMode"]
+                  except Exception as e:
+                      logger.info('Key retrieval failure: {}'.format(e))
+                  try:
+                      ec2 = boto3.client('ec2')
+                  except Exception as e:
+                      logger.info('boto3.client failure: {}'.format(e))
+                  try:
+                      ec2.modify_transit_gateway_vpc_attachment(
+                          TransitGatewayAttachmentId = TgwInspectionVpcAttachmentId,
+                          Options = {'ApplianceModeSupport': ApplianceMode}
+                      )
+                      TgwResponse = ec2.describe_transit_gateway_vpc_attachments(
+                          TransitGatewayAttachmentIds=[TgwInspectionVpcAttachmentId]
+                      )
+                      ApplianceModeStatus = TgwResponse['TransitGatewayVpcAttachments'][0]['Options']['ApplianceModeSupport']
+                  except Exception as e:
+                      logger.info('ec2.modify/describe_transit_gateway_vpc_attachment: {}'.format(e))
+
+                  responseData['ApplianceModeStatus'] = ApplianceModeStatus
+                  responseStatus = cfnresponse.SUCCESS
+                  cfnresponse.send(event, context, responseStatus, responseData)
+      Runtime: python3.7
+      Timeout: 30
+
+  ApplianceModeEnabled:
+    Type: Custom::ModifyTransitGatewayVpcAttachment
+    Properties:
+      ServiceToken: !GetAtt TgwApplianceMode.Arn
+      TgwInspectionVpcAttachmentId: !Ref Tgw1ApplianceVpcAttachment
+      ApplianceMode: enable
 
 Outputs:
   TgwId:
@@ -372,3 +452,6 @@ Outputs:
   TgwApplianceVpcAttachmendId:
     Description: Appliance VPC Attachment ID
     Value: !Ref Tgw1ApplianceVpcAttachment
+  ApplianceVpcApplianceModeStatus:
+    Description: Transit Gateway Appliance VPC Attachment Appliance Mode Status
+    Value: !GetAtt ApplianceModeEnabled.ApplianceModeStatus 

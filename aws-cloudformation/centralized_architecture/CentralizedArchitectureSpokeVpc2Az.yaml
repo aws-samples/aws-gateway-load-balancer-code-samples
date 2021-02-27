@@ -184,10 +184,7 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-igw"
+          Value: !Sub "${AWS::StackName}-igw"
   
   AttachInternetGateway:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -196,6 +193,7 @@ Resources:
       InternetGatewayId: !Ref InternetGateway
 
 # Create Subnets:
+  # AZ1:
   BastionSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -205,10 +203,7 @@ Resources:
       MapPublicIpOnLaunch: "true"
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-bastion-subnet1"
+          Value: !Sub "${AWS::StackName}-bastion-subnet-1"
 
   ApplicationSubnet1:
     Type: AWS::EC2::Subnet
@@ -219,10 +214,7 @@ Resources:
       MapPublicIpOnLaunch: "true"
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-application-subnet1"
+          Value: !Sub "${AWS::StackName}-application-subnet-1"
   
   TgwAttachSubnet1:
     Type: AWS::EC2::Subnet
@@ -233,11 +225,9 @@ Resources:
       MapPublicIpOnLaunch: "true"
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-tgw-attach-subnet1"  
+          Value: !Sub "${AWS::StackName}-tgw-attach-subnet-1"
 
+  # AZ2:
   BastionSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
@@ -247,10 +237,7 @@ Resources:
       MapPublicIpOnLaunch: "true"
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-bastion-subnet2"
+          Value: !Sub "${AWS::StackName}-bastion-subnet-2"
 
   ApplicationSubnet2:
     Type: AWS::EC2::Subnet
@@ -261,10 +248,7 @@ Resources:
       MapPublicIpOnLaunch: "true"
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-application-subnet2"
+          Value: !Sub "${AWS::StackName}-application-subnet-2"
 
   TgwAttachSubnet2:
     Type: AWS::EC2::Subnet
@@ -275,10 +259,7 @@ Resources:
       MapPublicIpOnLaunch: "true"
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-tgw-attach-subnet2" 
+          Value: !Sub "${AWS::StackName}-tgw-attach-subnet-2"
 
 # Create Route Tables:
   ApplicationRouteTable:
@@ -287,10 +268,7 @@ Resources:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-application-rtb"
+          Value: !Sub "${AWS::StackName}-applicaiton-rtb"
 
   BastionRouteTable:
     Type: AWS::EC2::RouteTable
@@ -298,41 +276,40 @@ Resources:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-bastion-rtb"
+          Value: !Sub "${AWS::StackName}-bastion-rtb"
 
 # Associate Subnets with Route Tables:
+  # AZ1:
   ApplicationSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref ApplicationSubnet1
       RouteTableId: !Ref ApplicationRouteTable
 
+  TgwAttachSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref TgwAttachSubnet1
+      RouteTableId: !Ref ApplicationRouteTable
+
+  BastionSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref BastionSubnet1
+      RouteTableId: !Ref BastionRouteTable
+
+  # AZ2:
   ApplicationSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref ApplicationSubnet2
       RouteTableId: !Ref ApplicationRouteTable
   
-  TgwAttachSubnet1RouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref TgwAttachSubnet1
-      RouteTableId: !Ref ApplicationRouteTable
-  
   TgwAttachSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref TgwAttachSubnet2
-      RouteTableId: !Ref ApplicationRouteTable   
-  
-  BastionSubnet1RouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref BastionSubnet1
-      RouteTableId: !Ref BastionRouteTable
+      RouteTableId: !Ref ApplicationRouteTable
 
   BastionSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -340,7 +317,7 @@ Resources:
       SubnetId: !Ref BastionSubnet2
       RouteTableId: !Ref BastionRouteTable
 
-# Create Routes:
+# Create Routes. Routes with TGW as the target are created through TGW template:
   BastionRoute:
     Type: AWS::EC2::Route
     DependsOn: AttachInternetGateway
@@ -354,10 +331,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !Ref Vpc
-      GroupName: !Join
-        - ""
-        - - !Ref AWS::StackName
-          - "-application-sg"
+      GroupName: !Sub "${AWS::StackName}-application-sg"
       GroupDescription: >-
         Access to application instance: allow TCP, UDP and ICMP from appropriate
         location. Allow all traffic from VPC CIDR.
@@ -385,10 +359,7 @@ Resources:
           ToPort: -1
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-application-sg"
+          Value: !Sub "${AWS::StackName}-application-sg"
 
 # Create Application Instances:
 
@@ -407,10 +378,7 @@ Resources:
             VolumeSize: !Ref ApplicationInstanceDiskSize
       Tags:
         - Key: Name
-          Value: !Join
-            - ''
-            - - !Ref 'AWS::StackName'
-              - '-application1'
+          Value: !Sub "${AWS::StackName}-application-instance-1"
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash -ex
@@ -441,10 +409,7 @@ Resources:
             VolumeSize: !Ref ApplicationInstanceDiskSize
       Tags:
         - Key: Name
-          Value: !Join
-            - ''
-            - - !Ref 'AWS::StackName'
-              - '-application2'
+          Value: !Sub "${AWS::StackName}-application-instance-2"
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash -ex
@@ -465,10 +430,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !Ref Vpc
-      GroupName: !Join
-        - ""
-        - - !Ref AWS::StackName
-          - "-bastion-sg"
+      GroupName: !Sub "${AWS::StackName}-bastion-sg"
       GroupDescription: >-
         Access to bastion instance: allow SSH and ICMP access from appropriate
         location. Allow all traffic from VPC CIDR
@@ -492,10 +454,7 @@ Resources:
           ToPort: -1
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-bastion-sg"
+          Value: !Sub "${AWS::StackName}-bastion-sg"
 
 # Create Bastion Host (creates only one bastion host in one AZ):
   BastionHost:
@@ -513,10 +472,7 @@ Resources:
             VolumeSize: !Ref ApplicationInstanceDiskSize
       Tags:
         - Key: Name
-          Value: !Join
-            - ''
-            - - !Ref 'AWS::StackName'
-              - '-bastion-host1'
+          Value: !Sub "${AWS::StackName}-bastion-host-1"
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash -ex
