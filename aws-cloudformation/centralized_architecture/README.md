@@ -6,7 +6,8 @@
 
 * For more details, refer to blog: **[Centralized inspection architecture with AWS Gateway Load Balancer and AWS Transit Gateway](https://aws.amazon.com/blogs/networking-and-content-delivery/centralized-inspection-architecture-with-aws-gateway-load-balancer-and-aws-transit-gateway/)**
 
-![](images/gwlb_centralized_architecture.jpg)
+![Figure 1: GWLB Centralized Architecture](images/gwlb_centralized_architecture.jpg)
+_Figure 1: GWLB Centralized Architecture_
 
 * **Launch CloudFormation templates in following order:**
   1. Appliance VPC Template
@@ -42,6 +43,14 @@ aws ec2 modify-transit-gateway-vpc-attachment \
     --transit-gateway-attachment-id <tgw-attach-0253EXAMPLE>
     --options ApplianceModeSupport=enable
 ```
+
+### 1-Click Deployment:
+
+* Alternatively, you can deploy [gwlb centralized architecture stack](https://us-west-2.console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/create/template?stackName=GwlbCentralizedDemo&templateURL=https://tech-content-us-west-2.s3-us-west-2.amazonaws.com/aws-gwlb-cloudformation-samples/centralized-architecture/nested-stack/CentralizedArchitecturePrimary.yaml) and it will provision the resources as described in _Figure 1: GWLB Centralized Architecture_. 
+  * While the link above launches the stack in Oregon (us-west-2) region, you can change the region to your choice. Make sure GWLB is supported in the region you choose to deploy the stack in.
+
+
+https://us-west-2.console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/create/template?stackName=SampleNlbAsg&templateURL=https://prm-demos-us-west-2.s3-us-west-2.amazonaws.com/privatelink/type-interface/service-provider/NLBWithLockedDownAutoScaledInstancesSample.yaml
 
 ### Validation Steps:
 * [GWLB Centralized Architecture Validation](CentralizedArchitectureValidation.md)
