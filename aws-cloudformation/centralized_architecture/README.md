@@ -49,8 +49,5 @@ aws ec2 modify-transit-gateway-vpc-attachment \
 * Alternatively, you can deploy [gwlb centralized architecture stack](https://us-west-2.console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/create/template?stackName=GwlbCentralizedDemo&templateURL=https://tech-content-us-west-2.s3-us-west-2.amazonaws.com/aws-gwlb-cloudformation-samples/centralized-architecture/nested-stack/CentralizedArchitecturePrimary.yaml) and it will provision the resources as described in _Figure 1: GWLB Centralized Architecture_. 
   * While the link above launches the stack in Oregon (us-west-2) region, you can change the region to your choice. Make sure GWLB is supported in the region you choose to deploy the stack in.
 
-
-https://us-west-2.console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/create/template?stackName=SampleNlbAsg&templateURL=https://prm-demos-us-west-2.s3-us-west-2.amazonaws.com/privatelink/type-interface/service-provider/NLBWithLockedDownAutoScaledInstancesSample.yaml
-
 ### Validation Steps:
 * [GWLB Centralized Architecture Validation](CentralizedArchitectureValidation.md)
