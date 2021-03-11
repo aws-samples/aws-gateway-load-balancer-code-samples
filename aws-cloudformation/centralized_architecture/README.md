@@ -32,11 +32,11 @@ _Figure 1: GWLB Centralized Architecture_
 
 ### Enable Transit Gateway Appliance Mode:
 
-To ensure flow symmetry, Transit Gateway appliance mode should be enabled on the Appliance VPC’s attachment. 
+* To ensure flow symmetry, Transit Gateway appliance mode should be enabled on the Appliance VPC’s attachment. 
 
-[GWLB Transit Gateway Sample](CentralizedArchitectureTgw.yaml) enables appliance mode for the Appliance VPC attachment. 
+* [GWLB Transit Gateway Sample](CentralizedArchitectureTgw.yaml) enables appliance mode for the Appliance VPC attachment. 
 
-You can also enable/disable appliance mode using AWS CLI. Once Transit Gateway template has been successfully deployed, fetch the Appliance VPC Attachment ID from stack's Outputs tab and enable/disable applince mode using AWS CLI as shown below. Replace the parameter values inside '< >' with appropriate values.
+* You can also enable/disable appliance mode using AWS CLI. Once Transit Gateway template has been successfully deployed, fetch the Appliance VPC Attachment ID from stack's Outputs tab and enable/disable applince mode using AWS CLI as shown below. Replace the parameter values inside '< >' with appropriate values.
 
 ```bash
 aws ec2 modify-transit-gateway-vpc-attachment \
