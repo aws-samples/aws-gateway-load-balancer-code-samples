@@ -2,25 +2,27 @@
 # using AWS CloudFormation. For more details, refer to blog:
 # https://aws-blogs-prod.amazon.com/networking-and-content-delivery/scaling-network-traffic-inspection-using-AWS-Gateway-Load-Balancer/
 
+# The template creates:
+#   - 1 VPC
+#   - 1 IGW
+#   - 2 subnets in AZ1: One each for application1 and GWLBE1
+#   - 2 subnets in AZ2: One each for application2 and GWLBE2
+#   - 4 route tables: One each for application1, GWLBE1, application2, GWLBE2 and IGW
+#   - 2 Security group: Application and Bastion
+#   - 2 Amazon Linux 2 instance acting as applications in application1 and application2
+#   - 1 Amazon Linux 2 instance acting as bastion host if condition is set to Yes.
+#   - Also creates interface endpoint for SSM
+
 AWSTemplateFormatVersion: "2010-09-09"
 
 Description: >-
-  AWS CloudFormation Sample Template For Spoke VPC Setup For 
-  Gateway Load Balancer (GWLB).
-  
-  This template creates:
-    - 1 VPC
-    - 1 IGW
-    - 2 subnets in AZ1: One each for application1 and GWLBE1
-    - 2 subnets in AZ2: One each for application2 and GWLBE2
-    - 4 route tables: One each for application1, GWLBE1, application2, GWLBE2 and IGW
-    - 2 Security group: Application and Bastion
-    - 2 Amazon Linux 2 instance acting as applications in application1 and application2
-    - 1 Amazon Linux 2 instance acting as bastion host if condition is set to Yes.
-  
+  AWS CloudFormation sample template for Spoke VPC setup For 
+  Gateway Load Balancer (GWLB) in a distributed architecture across two
+  Availability Zones (AZ).
+    
   **WARNING** This template creates one or more Amazon EC2 instances and
-  Gateway Load Balancer endpoints. You will be billed for the AWS resources
-  used if you create a stack from this template.
+  Gateway Load Balancer endpoints and interface endpoints. You will be billed
+  or the AWS resources used if you create a stack from this template.
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -171,6 +173,7 @@ Conditions:
     - "Yes"
 
 Resources:
+# Spoke VPC:
   Vpc:
     Type: AWS::EC2::VPC
     Properties:
@@ -180,20 +183,15 @@ Resources:
       InstanceTenancy: default
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-vpc"
-  
+          Value: !Sub "spoke-vpc-${AWS::StackName}"
+
+# IGW associated with Spoke VPC:
   InternetGateway:
     Type: AWS::EC2::InternetGateway
     Properties:
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-igw"
+          Value: !Sub "igw-1-${AWS::StackName}"
   
   AttachInternetGateway:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -201,6 +199,7 @@ Resources:
       VpcId: !Ref Vpc
       InternetGatewayId: !Ref InternetGateway
 
+# Subnets:
   ApplicationSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -210,10 +209,7 @@ Resources:
       MapPublicIpOnLaunch: "true"
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-application-subnet1"
+          Value: !Sub "application-subnet-1-${AWS::StackName}"
 
   GwlbeSubnet1:
     Type: AWS::EC2::Subnet
@@ -224,10 +220,7 @@ Resources:
       MapPublicIpOnLaunch: "true"
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-gwlbe-subnet1"
+          Value: !Sub "gwlbe-subnet-1-${AWS::StackName}"
 
   ApplicationSubnet2:
     Type: AWS::EC2::Subnet
@@ -238,10 +231,7 @@ Resources:
       MapPublicIpOnLaunch: "true"
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-application-subnet2"
+          Value: !Sub "application-subnet-2-${AWS::StackName}"
 
   GwlbeSubnet2:
     Type: AWS::EC2::Subnet
@@ -252,21 +242,17 @@ Resources:
       MapPublicIpOnLaunch: "true"
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-gwlbe-subnet2"
+          Value: !Sub "gwlbe-subnet-2-${AWS::StackName}"
 
+# Route Table and subnet association:
+  # AZ 1:
   ApplicationRouteTable1:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-application-rtb1"
+          Value: !Sub "application-rtb-1-${AWS::StackName}"
   
   ApplicationSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -280,10 +266,7 @@ Resources:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-gwlbe-rtb1"
+          Value: !Sub "gwlbe-rtb-1-${AWS::StackName}"
   
   GwlbeRoute1:
     Type: AWS::EC2::Route
@@ -298,17 +281,15 @@ Resources:
     Properties:
       SubnetId: !Ref GwlbeSubnet1
       RouteTableId: !Ref GwlbeRouteTable1
-
+  
+  # AZ 2:
   ApplicationRouteTable2:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-application-rtb2"
+          Value: !Sub "application-rtb-2-${AWS::StackName}"
   
   ApplicationSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -322,10 +303,7 @@ Resources:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-gwlbe-rtb2"
+          Value: !Sub "gwlbe-rtb-2-${AWS::StackName}"
   
   GwlbeRoute2:
     Type: AWS::EC2::Route
@@ -340,7 +318,8 @@ Resources:
     Properties:
       SubnetId: !Ref GwlbeSubnet2
       RouteTableId: !Ref GwlbeRouteTable2
-
+  
+  # Ingress Route Table and association:
   IgwRouteTable1:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -358,14 +337,12 @@ Resources:
       GatewayId: !Ref InternetGateway
       RouteTableId: !Ref IgwRouteTable1
 
+# Security Group:
   ApplicationSg:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !Ref Vpc
-      GroupName: !Join
-        - ""
-        - - !Ref AWS::StackName
-          - "-application-sg"
+      GroupName: !Sub "application-sg-1-${AWS::StackName}"
       GroupDescription: >-
         Access to application instance: allow TCP, UDP and ICMP from appropriate location.
         Allow all traffic from VPC CIDR.
@@ -393,11 +370,114 @@ Resources:
           ToPort: -1
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-app-sg"
+          Value: !Sub "application-sg-1-${AWS::StackName}"
 
+  BastionSg:
+    Condition: CreateBastion
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref Vpc
+      GroupName: !Sub "bastion-sg-${AWS::StackName}"
+      GroupDescription: >-
+        Access to bastion instance: allow SSH and ICMP access from appropriate location.
+        Allow all traffic from VPC CIDR
+      SecurityGroupIngress:
+        - CidrIp: !Ref AccessLocation
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+        - CidrIp: !Ref AccessLocation
+          IpProtocol: ICMP
+          FromPort: -1
+          ToPort: -1
+        - CidrIp: !Ref VpcCidr
+          IpProtocol: "-1"
+          FromPort: -1
+          ToPort: -1          
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: "-1"
+          FromPort: -1
+          ToPort: -1
+      Tags:
+        - Key: Name
+          Value: !Sub "bastion-sg-${AWS::StackName}"
+
+  ApplicationSgIngress:
+    Condition: CreateBastion
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref ApplicationSg
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+      SourceSecurityGroupId: !GetAtt BastionSg.GroupId
+
+# AWS PrivateLink interface endpoint for services:
+  VpcSSMEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties: 
+        PrivateDnsEnabled: true
+        SecurityGroupIds: 
+          - !Ref ApplicationSg
+        ServiceName: !Sub "com.amazonaws.${AWS::Region}.ssm"
+        SubnetIds: 
+          - !Ref ApplicationSubnet1
+          - !Ref ApplicationSubnet2
+        VpcEndpointType: Interface
+        VpcId: !Ref Vpc
+
+  VpcEC2MessagesEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties: 
+        PrivateDnsEnabled: true
+        SecurityGroupIds: 
+          - !Ref ApplicationSg
+        ServiceName: !Sub "com.amazonaws.${AWS::Region}.ec2messages"
+        SubnetIds: 
+          - !Ref ApplicationSubnet1
+          - !Ref ApplicationSubnet2
+        VpcEndpointType: Interface
+        VpcId: !Ref Vpc
+
+  VpcSSMMessagesEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties: 
+        PrivateDnsEnabled: true
+        SecurityGroupIds: 
+          - !Ref ApplicationSg
+        ServiceName: !Sub "com.amazonaws.${AWS::Region}.ssmmessages"
+        SubnetIds: 
+          - !Ref ApplicationSubnet1
+          - !Ref ApplicationSubnet2
+        VpcEndpointType: Interface
+        VpcId: !Ref Vpc
+
+# IAM Instance Role and Profile:
+  ApplicationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "appliance-role-${AWS::StackName}"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"    
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+
+  ApplicationProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+        - !Ref ApplicationRole
+
+# EC2 Instances (clients and bastion host):
   Application1:
     DependsOn:
     - AddRoute1ApplicationRouteTable1
@@ -407,6 +487,7 @@ Resources:
       ImageId: !Ref ApplicationAmiId
       KeyName: !Ref KeyPairName
       InstanceType: !Ref ApplicationInstanceType
+      IamInstanceProfile: !Ref ApplicationProfile
       SecurityGroupIds:
         - !Ref ApplicationSg
       SubnetId: !Ref ApplicationSubnet1
@@ -416,10 +497,7 @@ Resources:
             VolumeSize: !Ref ApplicationInstanceDiskSize
       Tags:
         - Key: Name
-          Value: !Join
-            - ''
-            - - !Ref 'AWS::StackName'
-              - '-application1'
+          Value: !Sub "client-1-${AWS::StackName}"
       UserData:
         Fn::Base64: |
           #!/bin/bash -ex
@@ -430,7 +508,7 @@ Resources:
           yum install httpd -y;
 
           # Configure hostname:
-          hostnamectl set-hostname gwlb-application1;
+          hostnamectl set-hostname gwlb-spoke-1-client-1;
 
           # Configure SSH client alive interval for ssh session timeout:
           echo 'ClientAliveInterval 60' | sudo tee --append /etc/ssh/sshd_config;
@@ -467,6 +545,7 @@ Resources:
       ImageId: !Ref ApplicationAmiId
       KeyName: !Ref KeyPairName
       InstanceType: !Ref ApplicationInstanceType
+      IamInstanceProfile: !Ref ApplicationProfile
       SecurityGroupIds:
         - !Ref ApplicationSg
       SubnetId: !Ref ApplicationSubnet2
@@ -476,10 +555,7 @@ Resources:
             VolumeSize: !Ref ApplicationInstanceDiskSize
       Tags:
         - Key: Name
-          Value: !Join
-            - ''
-            - - !Ref 'AWS::StackName'
-              - '-application2'
+          Value: !Sub "client-2-${AWS::StackName}"
       UserData:
         Fn::Base64: |
           #!/bin/bash -ex
@@ -490,7 +566,7 @@ Resources:
           yum install httpd -y;
 
           # Configure hostname:
-          hostnamectl set-hostname gwlb-application2;
+          hostnamectl set-hostname gwlb-spoke-1-client-2;
 
           # Configure SSH client alive interval for ssh session timeout:
           echo 'ClientAliveInterval 60' | sudo tee --append /etc/ssh/sshd_config;
@@ -518,6 +594,44 @@ Resources:
           echo "  </body>" >> /var/www/html/index.html
           echo "</html>" >> /var/www/html/index.html
 
+  BastionHost:
+    Condition: CreateBastion
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref ApplicationAmiId
+      KeyName: !Ref KeyPairName
+      InstanceType: !Ref ApplicationInstanceType
+      IamInstanceProfile: !Ref ApplicationProfile
+      SecurityGroupIds:
+        - !Ref BastionSg
+      SubnetId: !Ref GwlbeSubnet1
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: !Ref ApplicationInstanceDiskSize
+      Tags:
+        - Key: Name
+          Value: !Sub "bastion-host-${AWS::StackName}"
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash -ex
+
+          # Install packages:
+          yum update -y;
+          yum install htop -y;
+
+          # Configure hostname:
+          hostnamectl set-hostname gwlbe-spoke-1-bastion-host;
+
+          # Configure SSH client alive interval for ssh session timeout:
+          echo 'ClientAliveInterval 60' | sudo tee --append /etc/ssh/sshd_config;
+          service sshd restart;
+          
+          # Set dark background for vim:
+          touch /home/ec2-user/.vimrc;
+          echo "set background=dark" >> /home/ec2-user/.vimrc;
+
+# Gateway Load Balancer endpoints:
   GwlbVpcEndpoint1:
     Type: AWS::EC2::VPCEndpoint
     Properties:
@@ -535,7 +649,9 @@ Resources:
       VpcEndpointType: GatewayLoadBalancer
       SubnetIds:
         - !Ref GwlbeSubnet2
-  
+
+# Add routes to route tables:
+  # default route with GWLBE 1 as target to application-rtb-1
   AddRoute1ApplicationRouteTable1:
     Type: AWS::EC2::Route
     DependsOn: GwlbVpcEndpoint1
@@ -543,7 +659,8 @@ Resources:
       DestinationCidrBlock: !Ref AccessLocation
       VpcEndpointId: !Ref GwlbVpcEndpoint1
       RouteTableId: !Ref ApplicationRouteTable1
-
+  
+  # default route with GWLBE 2 as target to application-rtb-2
   AddRoute2ApplicationRouteTable2:
     Type: AWS::EC2::Route
     DependsOn: GwlbVpcEndpoint2
@@ -552,6 +669,7 @@ Resources:
       VpcEndpointId: !Ref GwlbVpcEndpoint2
       RouteTableId: !Ref ApplicationRouteTable2
 
+  # GWLBE(s) as target to ingress route table:
   AddApplication1IgwRouteTable:
     Type: AWS::EC2::Route
     DependsOn: GwlbVpcEndpoint1
@@ -566,95 +684,26 @@ Resources:
     Properties:
       DestinationCidrBlock: !Ref ApplicationSubnet2Cidr
       VpcEndpointId: !Ref GwlbVpcEndpoint2
-      RouteTableId: !Ref IgwRouteTable1      
+      RouteTableId: !Ref IgwRouteTable1
 
-  BastionSg:
-    Condition: CreateBastion
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      VpcId: !Ref Vpc
-      GroupName: !Join
-        - ""
-        - - !Ref AWS::StackName
-          - "-bastion-sg"
-      GroupDescription: >-
-        Access to bastion instance: allow SSH and ICMP access from appropriate location.
-        Allow all traffic from VPC CIDR
-      SecurityGroupIngress:
-        - CidrIp: !Ref AccessLocation
-          IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-        - CidrIp: !Ref AccessLocation
-          IpProtocol: ICMP
-          FromPort: -1
-          ToPort: -1
-        - CidrIp: !Ref VpcCidr
-          IpProtocol: "-1"
-          FromPort: -1
-          ToPort: -1          
-      SecurityGroupEgress:
-        - CidrIp: 0.0.0.0/0
-          IpProtocol: "-1"
-          FromPort: -1
-          ToPort: -1
-      Tags:
-        - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-bastion-sg"
-
-  BastionHost:
-    Condition: CreateBastion
-    Type: AWS::EC2::Instance
-    Properties:
-      ImageId: !Ref ApplicationAmiId
-      KeyName: !Ref KeyPairName
-      InstanceType: !Ref ApplicationInstanceType
-      SecurityGroupIds:
-        - !Ref BastionSg
-      SubnetId: !Ref GwlbeSubnet1
-      BlockDeviceMappings:
-        - DeviceName: /dev/xvda
-          Ebs:
-            VolumeSize: !Ref ApplicationInstanceDiskSize
-      Tags:
-        - Key: Name
-          Value: !Join
-            - ''
-            - - !Ref 'AWS::StackName'
-              - '-bastion-host'
-      UserData:
-        Fn::Base64: |
-          #!/bin/bash -ex
-
-          # Install packages:
-          yum update -y;
-          yum install htop -y;
-
-          # Configure hostname:
-          hostnamectl set-hostname gwlbe-bastion-host;
-
-          # Configure SSH client alive interval for ssh session timeout:
-          echo 'ClientAliveInterval 60' | sudo tee --append /etc/ssh/sshd_config;
-          service sshd restart;
-          
-          # Set dark background for vim:
-          touch /home/ec2-user/.vimrc;
-          echo "set background=dark" >> /home/ec2-user/.vimrc;
-
-  ApplicationSgIngress:
-    Condition: CreateBastion
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref ApplicationSg
-      IpProtocol: tcp
-      FromPort: 22
-      ToPort: 22
-      SourceSecurityGroupId: !GetAtt BastionSg.GroupId
-
+# Outputs:
 Outputs:
+  SpokeBastionHostPublicIp:
+    Condition: CreateBastion
+    Description: Spoke VPC Bastion Instance Public IP
+    Value: !GetAtt BastionHost.PublicIp
+  SpokeApplication1PublicIp:
+    Description: Spoke VPC Application Instance Public IP
+    Value: !GetAtt Application1.PublicIp
+  SpokeApplication2PublicIp:
+    Description: Spoke VPC Application Instance Public IP
+    Value: !GetAtt Application2.PublicIp
+  SpokeApplication1PrivateIp:
+    Description: Spoke VPC Application Instance Private IP
+    Value: !GetAtt Application1.PrivateIp
+  SpokeApplication2PrivateIp:
+    Description: Spoke VPC Application Instance Private IP
+    Value: !GetAtt Application2.PrivateIp      
   SpokeVpcCidr:
     Description: Spoke VPC CIDR
     Value: !Ref VpcCidr
@@ -680,16 +729,6 @@ Outputs:
     Condition: CreateBastion
     Description: Spoke VPC Bastion Security Group ID
     Value: !Ref BastionSg
-  SpokeApplication1PublicIp:
-    Description: Spoke VPC Application Instance Public IP
-    Value: !GetAtt Application1.PublicIp
-  SpokeApplication2PublicIp:
-    Description: Spoke VPC Application Instance Public IP
-    Value: !GetAtt Application2.PublicIp    
-  SpokeBastionHostPublicIp:
-    Condition: CreateBastion
-    Description: Spoke VPC Bastion Instance Public IP
-    Value: !GetAtt BastionHost.PublicIp
   SpokeGwlbVpcEndpoint1Id:
     Description: Gateway Load Balancer VPC Endpoint 1 ID
     Value: !Ref GwlbVpcEndpoint1

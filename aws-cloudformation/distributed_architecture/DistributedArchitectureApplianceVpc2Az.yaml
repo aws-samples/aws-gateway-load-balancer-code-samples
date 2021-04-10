@@ -8,36 +8,41 @@
 # Configures iptables on instances for hairpin setup. The hairpin setup 
 # allows traffic coming from GWLB on appliance to be sent back to GWLB.
 
+# Template when deployed creates:
+#   - 1 VPC
+#   - 1 IGW
+#   - 2 Public subnets in unique availability zone
+#   - 1 Public route table
+#     - 2 public subnets associated with this route table
+#     - Next hope for 0.0.0.0/0 set to IGW
+#   - 1 Security group
+#     - port 22 access
+#     - port 80 access
+#     - All TCP, UDP and ICMP from VPC CIDR
+#   - 2 Amazon Linux 2 instances acting as appliance in each AZ. 
+#     Registered as targets behind a GWLB. Configures iptables on 
+#     instances for hairpin setup.
+#   - 1 GWLB
+#   - 1 Target group for GWLB 
+#   - 1 Listner for GWLB
+#   - 1 VPC endpoint service 
+#   - Also creates interface endpoint for SSM
+
 # iptables configuration is for sample purpose only. It allows all the traffic! Use it for GWLB POC only**
 
 AWSTemplateFormatVersion: "2010-09-09"
 
 Description: >-
-  AWS CloudFormation Sample Template For Security Service Setup For 
-  Gateway Load Balancer (GWLB). It creates a hairpin setup using iptables
+  AWS CloudFormation sample template For Appliance/Security VPC setup for 
+  Gateway Load Balancer (GWLB) across 2 Availability Zones (AZ) in distributed
+  architecture. Template creates Amazon Linux 2 EC2 instances acting as
+  virtual appliance. EC2 intances are added as targets behind GWLB. EC2
+  instances, using iptables, are configured in a hairpin mode to send traffic
+  back to GWLB.
   
-  This template creates:
-    - 1 VPC
-    - 1 IGW
-    - 2 Public subnets in unique availability zone
-    - 1 Public route table
-      - 2 public subnets associated with this route table
-      - Next hope for 0.0.0.0/0 set to IGW
-    - 1 Security group
-      - port 22 access
-      - port 80 access
-      - All TCP, UDP and ICMP from VPC CIDR
-    - 2 Amazon Linux 2 instances acting as appliance in each AZ. 
-      Registered as targets behind a GWLB. Configures iptables on 
-      instances for hairpin setup.
-    - 1 GWLB
-    - 1 Target group for GWLB 
-    - 1 Listner for GWLB
-    - 1 VPC endpoint service 
-  
-  **WARNING** This template creates one or more Amazon EC2 instances and a 
-  GWLB. You will be billed for the AWS resources used if you
-  create a stack from this template.
+  **WARNING** This template creates one or more Amazon EC2 instances, 
+  GWLB and interface endpoitns. You will be billed for the AWS resources used
+  if you create a stack from this template.
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -208,6 +213,7 @@ Parameters:
     ConstraintDescription: Must be a valid AWS ARN of one or more principals    
 
 Resources:
+# Appliance/Security VPC:
   Vpc:
     Type: AWS::EC2::VPC
     Properties:
@@ -217,20 +223,15 @@ Resources:
       InstanceTenancy: default
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-vpc"
+          Value: !Sub "appliance-vpc-${AWS::StackName}"
   
+# IGW associated with Appliance VPC:
   InternetGateway:
     Type: AWS::EC2::InternetGateway
     Properties:
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-igw"
+          Value: !Sub "igw-1-${AWS::StackName}"
   
   AttachInternetGateway:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -238,6 +239,7 @@ Resources:
       VpcId: !Ref Vpc
       InternetGatewayId: !Ref InternetGateway
 
+# Subnets:
   PublicSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -247,10 +249,7 @@ Resources:
       MapPublicIpOnLaunch: "true"
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-appliance-subnet1"
+          Value: !Sub "appliance-subnet-1-${AWS::StackName}"
 
   PublicSubnet2:
     Type: AWS::EC2::Subnet
@@ -261,21 +260,16 @@ Resources:
       MapPublicIpOnLaunch: "true"
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-appliance-subnet2"
+          Value: !Sub "appliance-subnet-2-${AWS::StackName}"
 
+# Route Table:
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-appliance-rtb"
+          Value: !Sub "appliance-rtb-1-${AWS::StackName}"
   PublicRoute:
     Type: AWS::EC2::Route
     DependsOn: AttachInternetGateway
@@ -284,6 +278,7 @@ Resources:
       GatewayId: !Ref InternetGateway
       RouteTableId: !Ref PublicRouteTable
   
+  # Subnet to Route Table association:
   PublicSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -296,14 +291,12 @@ Resources:
       SubnetId: !Ref PublicSubnet2
       RouteTableId: !Ref PublicRouteTable
 
-  ApplicationSg:
+# Security Group:
+  ApplianceSg:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !Ref Vpc
-      GroupName: !Join
-        - ""
-        - - !Ref AWS::StackName
-          - "-app-sg"
+      GroupName: !Sub "appliance-sg-1-${AWS::StackName}"
       GroupDescription: >-
         Access to Appliance instance: allow SSH and ICMP access from desired CIDR.
         Allow all traffic from VPC CIDR
@@ -331,11 +324,10 @@ Resources:
           ToPort: -1
       Tags:
         - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref AWS::StackName
-              - "-app-sg"
+          Value: !Sub "appliance-sg-1-${AWS::StackName}"
 
+# Gateway Load Balancer (GWLB), Target Group, Listener
+  # GWLB:
   Gwlb:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -346,11 +338,9 @@ Resources:
         - !Ref PublicSubnet2
       Tags:
       - Key: Name
-        Value: !Join
-          - ""
-          - - !Ref AWS::StackName
-            - "-gwlb1"
-
+        Value: !Sub "gwlb-1-${AWS::StackName}"
+  
+  # Target Group:
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -369,11 +359,9 @@ Resources:
         - Id: !Ref Appliance2
       Tags:
       - Key: Name
-        Value: !Join
-          - ""
-          - - !Ref AWS::StackName
-            - "-tg1"
-
+        Value: !Sub "tg-1-${AWS::StackName}"
+  
+  # Listener:
   Listener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -382,10 +370,53 @@ Resources:
         TargetGroupArn: !Ref TargetGroup
       LoadBalancerArn: !Ref Gwlb
 
+# AWS PrivateLink interface endpoint for services:
+  VpcSSMEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties: 
+        PrivateDnsEnabled: true
+        SecurityGroupIds: 
+          - !Ref ApplianceSg
+        ServiceName: !Sub "com.amazonaws.${AWS::Region}.ssm"
+        SubnetIds: 
+          - !Ref PublicSubnet1
+          - !Ref PublicSubnet2
+        VpcEndpointType: Interface
+        VpcId: !Ref Vpc
 
+  VpcEC2MessagesEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties: 
+        PrivateDnsEnabled: true
+        SecurityGroupIds: 
+          - !Ref ApplianceSg
+        ServiceName: !Sub "com.amazonaws.${AWS::Region}.ec2messages"
+        SubnetIds: 
+          - !Ref PublicSubnet1
+          - !Ref PublicSubnet2
+        VpcEndpointType: Interface
+        VpcId: !Ref Vpc
+
+  VpcSSMMessagesEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties: 
+        PrivateDnsEnabled: true
+        SecurityGroupIds: 
+          - !Ref ApplianceSg
+        ServiceName: !Sub "com.amazonaws.${AWS::Region}.ssmmessages"
+        SubnetIds: 
+          - !Ref PublicSubnet1
+          - !Ref PublicSubnet2
+        VpcEndpointType: Interface
+        VpcId: !Ref Vpc
+
+# IAM Instance Role and Profile:
   ApplianceRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Sub "appliance-role-${AWS::StackName}"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"    
       AssumeRolePolicyDocument:
         Statement:
           - Effect: Allow
@@ -416,6 +447,7 @@ Resources:
       Roles:
         - !Ref ApplianceRole
 
+# EC2 Instances (Appliances acting as target for GWLB):
   Appliance1:
     DependsOn: Gwlb
     Type: AWS::EC2::Instance
@@ -425,7 +457,7 @@ Resources:
       InstanceType: !Ref ApplianceInstanceType
       IamInstanceProfile: !Ref ApplianceProfile
       SecurityGroupIds:
-        - !Ref ApplicationSg
+        - !Ref ApplianceSg
       SubnetId: !Ref PublicSubnet1
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
@@ -433,10 +465,7 @@ Resources:
             VolumeSize: !Ref ApplianceInstanceDiskSize
       Tags:
         - Key: Name
-          Value: !Join
-            - ''
-            - - !Ref 'AWS::StackName'
-              - '-appliance1'
+          Value: !Sub "appliance-1-${AWS::StackName}"
       UserData:
         Fn::Base64: |
           #!/bin/bash -ex
@@ -452,7 +481,7 @@ Resources:
           sudo sysctl -w net.ipv4.ip_forward=1;
 
           # Configure hostname:
-          hostnamectl set-hostname gwlb-appliance1;
+          hostnamectl set-hostname gwlb-target-1;
           
           # Configure SSH client alive interval for ssh session timeout:
           echo 'ClientAliveInterval 60' | sudo tee --append /etc/ssh/sshd_config;
@@ -516,7 +545,7 @@ Resources:
       InstanceType: !Ref ApplianceInstanceType
       IamInstanceProfile: !Ref ApplianceProfile
       SecurityGroupIds:
-        - !Ref ApplicationSg
+        - !Ref ApplianceSg
       SubnetId: !Ref PublicSubnet2
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
@@ -524,10 +553,7 @@ Resources:
             VolumeSize: !Ref ApplianceInstanceDiskSize
       Tags:
         - Key: Name
-          Value: !Join
-            - ''
-            - - !Ref 'AWS::StackName'
-              - '-appliance2'
+          Value: !Sub "appliance-2-${AWS::StackName}"
       UserData:
         Fn::Base64: |
           #!/bin/bash -ex
@@ -543,7 +569,7 @@ Resources:
           sudo sysctl -w net.ipv4.ip_forward=1;
 
           # Configure hostname:
-          hostnamectl set-hostname gwlb-appliance2;
+          hostnamectl set-hostname gwlb-targer-2;
           
           # Configure SSH client alive interval for ssh session timeout:
           echo 'ClientAliveInterval 60' | sudo tee --append /etc/ssh/sshd_config;
@@ -599,7 +625,7 @@ Resources:
           # Save iptables:
           service iptables save;
 
-
+# VPC Endpoint Service using GWLB ARN:
   VpcEndpointService:
     Type: AWS::EC2::VPCEndpointService
     Properties:
@@ -614,9 +640,11 @@ Resources:
         - !Ref AwsAccountToWhitelist
       ServiceId: !Ref VpcEndpointService
 
+  # Lambda Role and Policy and Log Group for describing VPC endpoint service:
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Sub "lambda-role-${AWS::StackName}"
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -634,7 +662,6 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - logs:CreateLogGroup
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
@@ -645,6 +672,7 @@ Resources:
                   - ec2:DescribeVpcEndpointServices
                 Resource: "*"
 
+  # Custom resrouce to retrieve VPC endpoint service name:
   DescribeVpceService:
     Type: AWS::Lambda::Function
     Properties:
@@ -700,6 +728,7 @@ Resources:
       ServiceToken: !GetAtt DescribeVpceService.Arn
       Input: !Ref VpcEndpointService
 
+# Outputs
 Outputs:
   ApplianceVpcCidr:
     Description: Appliance VPC CIDR
@@ -715,7 +744,7 @@ Outputs:
     Value: !Ref PublicSubnet2
   ApplianceSgId:
     Description: Appliance VPC Security Group ID
-    Value: !Ref ApplicationSg
+    Value: !Ref ApplianceSg
   Appliance1PublicIp:
     Description: Appliance VPC Appliance1's public IP
     Value: !GetAtt Appliance1.PublicIp
