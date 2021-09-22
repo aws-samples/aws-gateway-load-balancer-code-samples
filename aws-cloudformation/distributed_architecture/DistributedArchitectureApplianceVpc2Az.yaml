@@ -2,8 +2,7 @@
 # Appliance VPC using AWS CloudFormation. 
 
 # For architecture details refer to blog:
-# https://aws-blogs-prod.amazon.com/networking-and-content-delivery/scaling-network-traffic-inspection-using-AWS-Gateway-Load-Balancer/
-
+# https://aws.amazon.com/blogs/networking-and-content-delivery/scaling-network-traffic-inspection-using-aws-gateway-load-balancer/
 # Template uses Amazon Linux 2 instances as appliances behind the GWLB.
 # Configures iptables on instances for hairpin setup. The hairpin setup 
 # allows traffic coming from GWLB on appliance to be sent back to GWLB.
