@@ -47,17 +47,15 @@
 
 4. Capture GENEVE traffic using tcpdump. 
 
-The following tcpdump command filters traffic based inside packet source and destination IP and protocol.
+   The following tcpdump command filters traffic based inside packet source and destination IP and protocol.
+   
+   * 0x0a011544 = 10.1.21.68, server 1's IP address
+   * 0x0a011696 = 10.1.22.150, server 2's IP address
+   * 0x0a010b10 = 10.1.11.16, ALB's AZ1 private IP address
 
 ```bash
 sudo tcpdump -ni eth0 "(ether[94:4]=0x0a010b10 and ether[98:4]=0x0a011544) or (ether[94:4]=0x0a010b10 and ether[98:4]=0x0a011696) or (ether[94:4]=0x0a011544 and ether[98:4]=0x0a010b10) or (ether[94:4]=0x0a011696 and ether[98:4]=0x0a010b10) and (ether[91:1]=0x06)"
 ```
-
-In the above tcpdump command:
-
-  * 0x0a011544 = 10.1.21.68, server 1's IP address
-  * 0x0a011696 = 10.1.22.150, server 2's IP address
-  * 0x0a010b10 = 10.1.11.16, ALB's AZ1 private IP address
 
 ![](images/ingress/ingress_tcpdump_appliance_1.jpg)
 *Figure 15: Capture GENEVE traffic on appliance 1*
@@ -69,7 +67,7 @@ In the above tcpdump command:
 
 4. Verify traffic being processed by respective appliances
 
+   * While veryifying traffic on inspection appliance, you notice 2 packets. This is because inspection appliance is set up in an [hairpin mode](../../aws-cli/gwlb/configure_iptables_al2.md). In this mode, it sends all the traffic that it receives from GWLB back to GWLB on same interface.
+
 ![](images/ingress/ingress_tcpdump_appliance_1_verify_1.jpg)
 *Figure 18: Verifying Traffic on Appliance 1*
-
-While veryifying traffic on inspection appliance, you notice 2 packets. This is because inspection appliance is set up in an [hairpin mode](../../aws-cli/gwlb/configure_iptables_al2.md). In this mode, it sends all the traffic that it receives from GWLB back to GWLB on same interface.
