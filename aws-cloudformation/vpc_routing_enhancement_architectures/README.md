@@ -21,7 +21,7 @@
 
 * VPC routing enhacements based architectures are deployed using a distributed model. In a distributed model
   * GWLB and inspection appliances are hosted in a separate VPC. In this section, this vpc is referred to as *Inspection VPC*
-  * GWLB endpoints are created/distriuted across different VPCs whose traffic needs to be inspected. These different VPCs are also referred to as *Spoke VPCs, Ingress VPCs,* etc. 
+  * GWLB endpoints are created/distriuted across different VPCs whose traffic needs to be inspected. In this section, these different VPCs are referred to as *Egress VPCs, Ingress VPCs, Spoke VPCs* etc. 
   * These distributed endpoints are connected to GWLB based VPC endpoint service hosted Inspection VPC
 
 * **You first need to create/deploy Inspection VPC sample template followed by Spoke VPCs.**
