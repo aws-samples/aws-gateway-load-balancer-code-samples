@@ -21,3 +21,4 @@
 ### **GWLB Architectures**
 * [GWLB Distributed Architecture](distributed_architecture/)
 * [GWLB Centralized Architecture](centralized_architecture/)
+* [GWLB VPC Routing Enhancements based Architectures](vpc_routing_enhancement_architectures/)
