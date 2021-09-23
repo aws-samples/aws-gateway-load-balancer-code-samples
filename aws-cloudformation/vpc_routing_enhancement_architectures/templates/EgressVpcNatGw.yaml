@@ -563,7 +563,8 @@ Resources:
           export instance_az=$(cat /home/ec2-user/iid |grep 'availability' | awk -F': ' '{print $2}' | awk -F',' '{print $1}');
           
           # Start httpd and configure index.html:
-          systemctl start httpd
+          systemctl enable httpd;
+          systemctl start httpd;
           touch /var/www/html/index.html
           echo "<html>" >> /var/www/html/index.html
           echo "  <head>" >> /var/www/html/index.html
@@ -623,7 +624,8 @@ Resources:
           export instance_az=$(cat /home/ec2-user/iid |grep 'availability' | awk -F': ' '{print $2}' | awk -F',' '{print $1}');
           
           # Start httpd and configure index.html:
-          systemctl start httpd
+          systemctl enable httpd;
+          systemctl start httpd;
           touch /var/www/html/index.html
           echo "<html>" >> /var/www/html/index.html
           echo "  <head>" >> /var/www/html/index.html

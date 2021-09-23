@@ -606,7 +606,8 @@ Resources:
           sudo yum install iptables-services -y;
           
           # Enable IP Forwarding:
-          sudo sysctl -w net.ipv4.ip_forward=1;
+          echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.d/00-defaults.conf;
+          sysctl -p /etc/sysctl.d/00-defaults.conf;
 
           # Configure hostname:
           hostnamectl set-hostname gwlb-target-1;
@@ -629,6 +630,7 @@ Resources:
           export gwlb_ip=$(aws --region $instance_region ec2 describe-network-interfaces --filters Name=vpc-id,Values=$instance_vpcid | jq ' .NetworkInterfaces[] | select(.AvailabilityZone=='$instance_az') | select(.InterfaceType=="gateway_load_balancer") |.PrivateIpAddress' -r);
 
           # Start http and configure index.html:
+          systemctl enable httpd;
           systemctl start httpd;
           touch /var/www/html/index.html;
           echo "<html>" >> /var/www/html/index.html
@@ -694,7 +696,8 @@ Resources:
           sudo yum install iptables-services -y;
           
           # Enable IP Forwarding:
-          sudo sysctl -w net.ipv4.ip_forward=1;
+          echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.d/00-defaults.conf;
+          sysctl -p /etc/sysctl.d/00-defaults.conf;
 
           # Configure hostname:
           hostnamectl set-hostname gwlb-target-2;
@@ -717,6 +720,7 @@ Resources:
           export gwlb_ip=$(aws --region $instance_region ec2 describe-network-interfaces --filters Name=vpc-id,Values=$instance_vpcid | jq ' .NetworkInterfaces[] | select(.AvailabilityZone=='$instance_az') | select(.InterfaceType=="gateway_load_balancer") |.PrivateIpAddress' -r);
 
           # Start httpd and configure index.html:
+          systemctl enable httpd;
           systemctl start httpd;
           touch /var/www/html/index.html;
           echo "<html>" >> /var/www/html/index.html
