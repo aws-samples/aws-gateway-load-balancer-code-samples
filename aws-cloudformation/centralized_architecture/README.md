@@ -2,9 +2,11 @@
 
 ### Welcome
 
-* This section contains sample AWS Cloudformation templates that demonstrates how to create centralized inspection architecture using AWS Gateway Load Balancer (GWLB) AWS Gateway Load Balancer Endpoints (GWLBe), virtual appliances and AWS Transit Gateway (TGW) from templates that are written in YAML.
+This section contains sample AWS CloudFormation templates that demonstrates how to create centralized inspection architecture using AWS Gateway Load Balancer (GWLB) AWS Gateway Load Balancer Endpoints (GWLBe), virtual appliances and AWS Transit Gateway (TGW) from templates that are written in YAML.
 
-* For more details, refer to blog: **[Centralized inspection architecture with AWS Gateway Load Balancer and AWS Transit Gateway](https://aws.amazon.com/blogs/networking-and-content-delivery/centralized-inspection-architecture-with-aws-gateway-load-balancer-and-aws-transit-gateway/)**
+Here you will find sample AWS CloudFormation templates for centralized architecture described in the blog **[Centralized inspection architecture with AWS Gateway Load Balancer and AWS Transit Gateway](https://aws.amazon.com/blogs/networking-and-content-delivery/centralized-inspection-architecture-with-aws-gateway-load-balancer-and-aws-transit-gateway/)**
+
+**Note:** For other architecture patterns, refer to [Centralized Architecture Patterns](centralized_architecture_patterns)
 
 ![Figure 1: GWLB Centralized Architecture](images/gwlb_centralized_architecture.jpg)
 _Figure 1: GWLB Centralized Architecture_
