@@ -38,8 +38,11 @@ sudo iptables -F;
 sudo iptables -X;
 
 # Configure nat table to hairpin traffic back to GWLB:
-sudo iptables -t nat -A PREROUTING -p udp -s $gwlb_ip -d $instance_ip -i eth0 -j DNAT --to-destination $gwlb_ip:6081;
-sudo iptables -t nat -A POSTROUTING -p udp --dport 6081 -s $gwlb_ip -d $gwlb_ip -o eth0 -j MASQUERADE;
+for gwlb_ip in $(aws ec2 describe-network-interfaces --filters Name=vpc-id,Values=$instance_vpcid --region $instance_region | jq ' .NetworkInterfaces[] | select(.InterfaceType=="gateway_load_balancer") |.PrivateIpAddress' -r)
+  do
+  sudo iptables -t nat -A PREROUTING -p udp -s $gwlb_ip -d $instance_ip -i eth0 -j DNAT --to-destination $gwlb_ip:6081
+  sudo iptables -t nat -A POSTROUTING -p udp --dport 6081 -s $gwlb_ip -d $gwlb_ip -o eth0 -j MASQUERADE
+done
 
 # Save iptables:
 sudo service iptables save;
