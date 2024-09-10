@@ -79,3 +79,6 @@ Inspection appliance consists of [Amazon Linux 2 EC2 instances configured in hai
 
 ![ingress inspection with NLB for VPC routing enhancements with GWLBE](images/ingress-nlb/ingress_inspection_nlb_vpc_re_gwlbe.png)
 *Figure 4: Ingress traffic inspection with NLB*
+
+  * Validation Steps:
+    * [Validation: Inspect ingress traffic with NLB](IngressVpcNlb.md)
