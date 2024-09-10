@@ -21,7 +21,7 @@
 
 * VPC routing enhacements based architectures are deployed using a distributed model. In a distributed model
   * GWLB and inspection appliances are hosted in a separate VPC. In this section, this vpc is referred to as *Inspection VPC*
-  * GWLB endpoints are created/distriuted across different VPCs whose traffic needs to be inspected. In this section, these different VPCs are referred to as *Egress VPC, Ingress VPC, Spoke VPC* etc. 
+  * GWLB endpoints are created/distriuted across different VPCs whose traffic needs to be inspected. In this section, these different VPCs are referred to as *Egress VPC, Ingress VPC, Spoke VPC* etc.
   * These distributed endpoints are connected to GWLB based VPC endpoint service hosted Inspection VPC
 
 * **You first need to create/deploy Inspection VPC sample template followed by Spoke VPCs.**
@@ -54,7 +54,7 @@ Inspection appliance consists of [Amazon Linux 2 EC2 instances configured in hai
   * ***Note:** Before deploying the following template, make sure you have created/deployed Inspection VPC template*
 
   * [Sample template: Inspect ingress traffic with ALB](templates/IngressVpcAlb.yaml) template when deployed successfully, creates architecture as depicted in Figure 3. The architecture allows you to inspect ingress traffic with ALB. Using VPC routing enhancements, GWLB endpoint raffic between ALB and application is routed to inspection appliance in Inspection VPC. Spoke VPC in the Figure 3 is refered to as Ingress VPC.
-    
+
     Architecture also consists of NAT GW. NAT GW allows resources in private subnet to communicate with resources on Internet. Traffic between private resources and NAT GW is also routed to inspection appliance.
 
 ![](images/ingress/ingress_inspection_elb_vpc_re_gwlbe.jpg)
