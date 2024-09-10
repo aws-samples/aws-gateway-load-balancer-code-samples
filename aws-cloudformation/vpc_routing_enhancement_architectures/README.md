@@ -71,11 +71,11 @@ Inspection appliance consists of [Amazon Linux 2 EC2 instances configured in hai
 
     Architecture also consists of NAT GW. NAT GW allows resources in private subnet to communicate with resources on Internet. Traffic between private resources and NAT GW is also routed to inspection appliance.
 
-  > [!NOTE]
-  > The target group must have client IP preservation **disabled** for this architecture to work
+> [!NOTE]
+> The target group must have client IP preservation **disabled** for this architecture to work
 
-  > [!NOTE]
-  > In the provided CloudFormation template, the target group uses the Ec2 instance ID for its targets. However, using the EC2 instance's private IP will also work.
+> [!NOTE]
+> In the provided CloudFormation template, the target group uses the Ec2 instance ID for its targets. However, using the EC2 instance's private IP will also work.
 
 ![ingress inspection with NLB for VPC routing enhancements with GWLBE](images/ingress-nlb/ingress_inspection_nlb_vpc_re_gwlbe.png)
 *Figure 4: Ingress traffic inspection with NLB*
