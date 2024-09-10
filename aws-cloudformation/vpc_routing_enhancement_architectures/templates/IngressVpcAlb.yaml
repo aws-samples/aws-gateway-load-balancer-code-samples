@@ -19,11 +19,11 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
 Description: >-
-  AWS CloudFormation sample template for Ingress VPC setup For 
+  AWS CloudFormation sample template for Ingress VPC setup For
   Gateway Load Balancer (GWLB) in a distributed architecture across two
   Availability Zones (AZ).
-    
-  **WARNING** This template creates one or more Amazon EC2 instances, GWLB 
+
+  **WARNING** This template creates one or more Amazon EC2 instances, GWLB
   endpoints, interface endpoints, NAT gateways and ALB. You will be billed
   or the AWS resources used if you create a stack from this template.
 
@@ -52,7 +52,7 @@ Metadata:
         Parameters:
           - TargetGroupName
           - ListenerPort
-          - ListenerProtocol          
+          - ListenerProtocol
       - Label:
           default: Application Configuration
         Parameters:
@@ -66,11 +66,11 @@ Metadata:
         Parameters:
           - ServiceName
       - Label: Bastion Host Condition
-          - CreateBastionHost          
+          - CreateBastionHost
 
     ParameterLabels:
       VpcCidr:
-        default: Network CIDR block for new VPC   
+        default: Network CIDR block for new VPC
       AvailabilityZone1:
         default: Public Availability Zone 1
       PublicSubnet1Cidr:
@@ -78,7 +78,7 @@ Metadata:
       GwlbeSubnet1Cidr:
         default: Network CIDR for GWLBE Subnet 1
       ApplicationSubnet1Cidr:
-        default: Network CIDR for Application Subnet 1        
+        default: Network CIDR for Application Subnet 1
       AvailabilityZone2:
         default: Public Availability Zone 2
       PublicSubnet2Cidr:
@@ -96,7 +96,7 @@ Metadata:
       ListenerPort:
         default: Listener Port
       ListenerProtocol:
-        default: Listener Protocol              
+        default: Listener Protocol
       ApplicationInstanceType:
         default: Application Instance Type
       ApplicationAmiId:
@@ -110,7 +110,7 @@ Metadata:
       ServiceName:
         default: The name of the endpoint service to create GWLB endpoint for
       CreateBastionHost:
-        default: Condition to create bastion host          
+        default: Condition to create bastion host
 
 Parameters:
   # VPC:
@@ -130,7 +130,7 @@ Parameters:
     Default: 10.1.11.0/24
     Description: CIDR block for the Public Subnet 1 located in Availability Zone 1
     Type: String
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28  
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
   GwlbeSubnet1Cidr:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$"
     Default: 10.1.10.0/28
@@ -159,7 +159,7 @@ Parameters:
     Default: 10.1.10.16/28
     Description: CIDR block for the GWLBE Subnet 2 located in Availability Zone 2
     Type: String
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28    
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
   ApplicationSubnet2Cidr:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$"
     Default: 10.1.22.0/24
@@ -169,15 +169,15 @@ Parameters:
   # ALB:
   ALBName:
     Description: >-
-      Application Load balancer name. This name must be unique within your AWS 
-      account and can have a maximum of 32 alphanumeric characters and 
+      Application Load balancer name. This name must be unique within your AWS
+      account and can have a maximum of 32 alphanumeric characters and
       hyphens. A name cannot begin or end with a hyphen.
     Type: String
     Default: alb-ext
     ConstraintDescription: Must be a valid ALB Name
   ALBScheme:
     Description: >-
-      Application Load Balancer scheme. Valid values are internet-facing and 
+      Application Load Balancer scheme. Valid values are internet-facing and
       internal. The default is internal
     Default: internet-facing
     AllowedValues: ['internet-facing', 'internal']
@@ -190,7 +190,7 @@ Parameters:
     ConstraintDescription: Must be a valid target group name
   ListenerPort:
     Description: >-
-      The port on which the listener listens for requests. 
+      The port on which the listener listens for requests.
       Default is 80
     Default: 80
     Type: Number
@@ -247,7 +247,7 @@ Parameters:
     ConstraintDescription: Value must be either Yes or No
 
 Conditions:
-  BastionHostCreate: !Equals [!Ref CreateBastionHost, "Yes"]    
+  BastionHostCreate: !Equals [!Ref CreateBastionHost, "Yes"]
 
 Resources:
 # Ingress VPC:
@@ -269,7 +269,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-igw"
-  
+
   AttachInternetGateway:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
@@ -299,7 +299,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-gwlbe-subnet-1"
-          
+
   ApplicationSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -405,7 +405,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-public-rtb-1"
-  
+
   PublicSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -420,7 +420,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-gwlbe-rtb-1"
-    
+
   GwlbeSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -435,13 +435,13 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-app-rtb-1"
-  
+
   ApplicationSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref ApplicationSubnet1
       RouteTableId: !Ref ApplicationRouteTable1
-  
+
   # AZ 2:
   PublicRouteTable2:
     Type: AWS::EC2::RouteTable
@@ -450,7 +450,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-public-rtb-2"
-  
+
   PublicSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -465,7 +465,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-gwlbe-rtb-2"
-  
+
   GwlbeSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -480,7 +480,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-app-rtb-2"
-  
+
   ApplicationSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -509,7 +509,7 @@ Resources:
         - CidrIp: !Ref AccessLocation
           IpProtocol: tcp
           FromPort: 443
-          ToPort: 443                  
+          ToPort: 443
         - CidrIp: !Ref AccessLocation
           IpProtocol: ICMP
           FromPort: -1
@@ -517,7 +517,7 @@ Resources:
         - CidrIp: !Ref VpcCidr
           IpProtocol: "-1"
           FromPort: -1
-          ToPort: -1          
+          ToPort: -1
       SecurityGroupEgress:
         - CidrIp: 0.0.0.0/0
           IpProtocol: "-1"
@@ -543,7 +543,7 @@ Resources:
         - CidrIp: !Ref AccessLocation
           IpProtocol: tcp
           FromPort: 443
-          ToPort: 443       
+          ToPort: 443
         - CidrIp: !Ref AccessLocation
           IpProtocol: ICMP
           FromPort: -1
@@ -551,7 +551,7 @@ Resources:
         - CidrIp: !Ref VpcCidr
           IpProtocol: "-1"
           FromPort: -1
-          ToPort: -1          
+          ToPort: -1
       SecurityGroupEgress:
         - CidrIp: 0.0.0.0/0
           IpProtocol: "-1"
@@ -572,7 +572,7 @@ Resources:
         - CidrIp: !Ref VpcCidr
           IpProtocol: "-1"
           FromPort: -1
-          ToPort: -1             
+          ToPort: -1
       SecurityGroupEgress:
         - CidrIp: 0.0.0.0/0
           IpProtocol: "-1"
@@ -588,7 +588,7 @@ Resources:
     Properties:
       RoleName: !Sub "${AWS::StackName}-instance-ssm-role"
       ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"    
+        - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
       AssumeRolePolicyDocument:
         Statement:
           - Effect: Allow
@@ -608,7 +608,7 @@ Resources:
 
 # EC2 Instances (servers and bastion host):
   Server1:
-    DependsOn: 
+    DependsOn:
       - PublicRtb1EditLocalRoute
       - GwlbeRtb1Route1
       - AppRtb1Route1
@@ -645,7 +645,7 @@ Resources:
           # Configure SSH client alive interval for ssh session timeout:
           echo 'ClientAliveInterval 60' | sudo tee --append /etc/ssh/sshd_config;
           service sshd restart;
-          
+
           # Set dark background for vim:
           touch /home/ec2-user/.vimrc;
           echo "set background=dark" >> /home/ec2-user/.vimrc;
@@ -653,7 +653,7 @@ Resources:
           # Define variables:
           curl http://169.254.169.254/latest/dynamic/instance-identity/document > /home/ec2-user/iid
           export instance_az=$(cat /home/ec2-user/iid |grep 'availability' | awk -F': ' '{print $2}' | awk -F',' '{print $1}');
-          
+
           # Start httpd and configure index.html:
           systemctl enable httpd;
           systemctl start httpd;
@@ -671,7 +671,7 @@ Resources:
           echo "</html>" >> /var/www/html/index.html
 
   Server2:
-    DependsOn: 
+    DependsOn:
       - PublicRtb2EditLocalRoute
       - GwlbeRtb2Route1
       - AppRtb2Route1
@@ -708,7 +708,7 @@ Resources:
           # Configure SSH client alive interval for ssh session timeout:
           echo 'ClientAliveInterval 60' | sudo tee --append /etc/ssh/sshd_config;
           service sshd restart;
-          
+
           # Set dark background for vim:
           touch /home/ec2-user/.vimrc;
           echo "set background=dark" >> /home/ec2-user/.vimrc;
@@ -716,7 +716,7 @@ Resources:
           # Define variables:
           curl http://169.254.169.254/latest/dynamic/instance-identity/document > /home/ec2-user/iid
           export instance_az=$(cat /home/ec2-user/iid |grep 'availability' | awk -F': ' '{print $2}' | awk -F',' '{print $1}');
-          
+
           # Start httpd and configure index.html:
           systemctl enable httpd;
           systemctl start httpd
@@ -766,7 +766,7 @@ Resources:
           # Configure SSH client alive interval for ssh session timeout:
           echo 'ClientAliveInterval 60' | sudo tee --append /etc/ssh/sshd_config;
           service sshd restart;
-          
+
           # Set dark background for vim:
           touch /home/ec2-user/.vimrc;
           echo "set background=dark" >> /home/ec2-user/.vimrc;
@@ -831,7 +831,7 @@ Resources:
               ec2 = boto3.client('ec2')
           except ClientError as e:
               logger.error(f"ERROR: failed to connect to EC2 client: {e}")
-              sys.exit(1)              
+              sys.exit(1)
 
           def handler(event, context):
               logger = logging.getLogger()
@@ -845,12 +845,12 @@ Resources:
                   DestCidr = event["ResourceProperties"]["DestCidr"]
                   VpceId = event["ResourceProperties"]["VpceId"]
                   RtbId = event["ResourceProperties"]["RtbId"]
-                    
+
               except Exception as e:
                   logger.info('Attribute retrival failure: {}'.format(e))
 
               try:
-                  if event["RequestType"] == "Delete":    
+                  if event["RequestType"] == "Delete":
                       responseStatus = cfnresponse.SUCCESS
                       cfnresponse.send(event, context, responseStatus, responseData)
               except Exception:
@@ -867,7 +867,7 @@ Resources:
                       )
                   except Exception as e:
                       logger.info('ec2.describe_vpc_endpoint_service_configurations failure: {}'.format(e))
-            
+
                   responseStatus = cfnresponse.SUCCESS
                   cfnresponse.send(event, context, responseStatus, responseData)
       Runtime: python3.12
@@ -913,7 +913,7 @@ Resources:
     Properties:
       DestinationCidrBlock: 0.0.0.0/0
       VpcEndpointId: !Ref GwlbVpcEndpoint1
-      RouteTableId: !Ref ApplicationRouteTable1      
+      RouteTableId: !Ref ApplicationRouteTable1
   AppRtb1EditLocalRoute:
     Type: Custom::ReplaceRoute
     # DependsOn: GwlbVpcEndpoint1
@@ -962,7 +962,7 @@ Resources:
     Properties:
       DestinationCidrBlock: 0.0.0.0/0
       VpcEndpointId: !Ref GwlbVpcEndpoint2
-      RouteTableId: !Ref ApplicationRouteTable2      
+      RouteTableId: !Ref ApplicationRouteTable2
   AppRtb2EditLocalRoute:
     Type: Custom::ReplaceRoute
     # DependsOn: GwlbVpcEndpoint2
@@ -1003,7 +1003,7 @@ Resources:
       TargetType: instance
       Targets:
         - Id: !Ref Server1
-        - Id: !Ref Server2     
+        - Id: !Ref Server2
       Tags:
       - Key: Name
         Value: !Sub "${AWS::StackName}-alb1-tg1"
@@ -1029,7 +1029,7 @@ Outputs:
     Value: !GetAtt Server1.PrivateIp
   IngressServer2PrivateIp:
     Description: Ingress VPC Application Instance Private IP
-    Value: !GetAtt Server2.PrivateIp      
+    Value: !GetAtt Server2.PrivateIp
   IngressVpcCidr:
     Description: Ingress VPC CIDR
     Value: !Ref VpcCidr
@@ -1056,14 +1056,14 @@ Outputs:
     Value: !Ref ApplicationSubnet2
   IngressAlbSgId:
     Description: Ingress VPC Application Security Group ID
-    Value: !Ref ALBSg    
+    Value: !Ref ALBSg
   IngressBastionSgId:
     Condition: BastionHostCreate
     Description: Ingress VPC Bastion Security Group ID
     Value: !Ref BastionSg
   IngressApplicationSgId:
     Description: Ingress VPC Application Security Group ID
-    Value: !Ref ApplicationSg    
+    Value: !Ref ApplicationSg
   IngressGwlbVpcEndpoint1Id:
     Description: Gateway Load Balancer VPC Endpoint 1 ID
     Value: !Ref GwlbVpcEndpoint1
