@@ -776,7 +776,7 @@ Resources:
             
                   responseStatus = cfnresponse.SUCCESS
                   cfnresponse.send(event, context, responseStatus, responseData)
-      Runtime: python3.7
+      Runtime: python3.12
       Timeout: 150
 
 # Add routes to route tables:
