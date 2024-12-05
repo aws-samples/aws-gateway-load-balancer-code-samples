@@ -13,10 +13,10 @@
 #   - 2 Private subnets in unique availability zone
 #   - 1 Public route table
 #     - 2 public subnets associated with this route table
-#     - Next hope for 0.0.0.0/0 set to IGW
+#     - Next hop for 0.0.0.0/0 set to IGW
 #   - 2 Private route tables
 #     - private subnets associated with these route tables
-#     - Next hope for 0.0.0.0/0 set to respective NGWs
+#     - Next hop for 0.0.0.0/0 set to respective NGWs
 #   - 1 bastion security group
 #     - port 22, port 80 and port 443 access
 #     - All TCP, UDP and ICMP from VPC CIDR
