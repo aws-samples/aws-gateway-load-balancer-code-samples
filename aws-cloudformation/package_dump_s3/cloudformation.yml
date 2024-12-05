@@ -1,0 +1,163 @@
+Parameters:
+  AmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: '/aws/service/canonical/ubuntu/server/20.04/stable/current/amd64/hvm/ebs-gp2/ami-id'  
+  
+  GwlbTargetGroupArn:
+    Type: String
+    Default: arn:aws:elasticloadbalancing:region:accountId:targetgroup/TargetGroupName/TargetGroupId
+
+  InstanceSubnet:
+    Type: AWS::EC2::Subnet::Id
+    Description: Subnet to deploy the Package dump instance to.
+
+  VPC:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC to deploy the Package dump instance to.
+
+  VpcCidr:
+    Type: String
+    Description: The VPC cidr
+
+  HealthCheckPort:
+    Type: String
+    Description: The Health check port of the target Group.
+    Default: 80
+
+Resources:
+  GwlbPackageDumpRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Policies:
+      - PolicyName: "root"
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+          - Effect: "Allow"
+            Action: "s3:PutObject"
+            Resource: 
+              - !Sub ${GwlbPackageDumpS3Bucket.Arn}
+              - !Sub ${GwlbPackageDumpS3Bucket.Arn}/*
+          - Effect: Allow
+            Action: "elasticloadbalancing:RegisterTargets"
+            Resource: !Sub ${GwlbTargetGroupArn}
+            
+  GwlbPackageDumpInstanceProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties:
+      Roles:
+        - !Sub ${GwlbPackageDumpRole}
+
+  GwlbPackageDumpS3Bucket:
+    Type: "AWS::S3::Bucket"
+
+  GwlbPackageDumpSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allows traffic to package dump instance
+      SecurityGroupIngress:
+      - CidrIp: !Sub ${VpcCidr}
+        IpProtocol: "-1"
+      SecurityGroupEgress:
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: "-1"
+      VpcId: !Sub ${VPC}
+
+  GwlbPackageDumpInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref AmiId
+      InstanceType: t3.small
+      Monitoring: 'false'
+      UserData:
+        Fn::Base64:
+          Fn::Sub: |-
+            #!/bin/bash
+            REGION=${AWS::Region}
+            BUCKETNAME=${GwlbPackageDumpS3Bucket}
+            HEALTHCHECKPORT=${HealthCheckPort}
+            INSTANCEID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+            INSTANCEIP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+            
+            apt update && DEBIAN_FRONTEND=noninteractive apt install -y unzip tshark npm
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip awscliv2.zip && ./aws/install
+            npm install pm2@latest -g
+            pm2 install pm2-logrotate
+            pm2 set pm2-logrotate:retain 5
+            pm2 startup
+
+            sysctl -w net.ipv4.ip_forward=1
+            sysctl -w net.ipv4.conf.default.rp_filter=0
+
+            mkdir -p /opt/networking/serve/
+            touch /opt/networking/serve/index.html
+            echo "Instance $INSTANCEID is alive!" > /opt/networking/serve/index.html
+            
+            cat > /opt/networking/gwlb-geneve-package-dump.sh << 'EOF'
+            #!/bin/bash
+            REGION=$1
+            BUCKETNAME=$2
+            INSTANCEIP=$3
+
+            while : ;do
+              TIME=$(date --iso-8601='seconds')
+              echo "Restarting package capture /tmp/$TIME.txt"
+              timeout 60 tshark -V -O geneve -Y "geneve && not ip.src==$INSTANCEIP" > /tmp/$TIME.txt
+              echo "timeout reached. Uploading the package dump /tmp/$TIME.txt to S3"
+              aws s3 cp /tmp/$TIME.txt s3://$BUCKETNAME/simple-geneve/ --region $REGION && echo "Upload of /tmp/$TIME.txt complete" && rm /tmp/$TIME.txt && echo "Deletion of /tmp/$TIME.txt complete" &
+            done
+            EOF
+            chmod +x /opt/networking/gwlb-geneve-package-dump.sh
+            
+            cat > /opt/networking/gwlb-pcap-package-dump.sh << 'EOF'
+            #!/bin/bash
+            REGION=$1
+            BUCKETNAME=$2
+
+            while : ;do
+              TIME=$(date --iso-8601='seconds')
+              echo "Restarting package capture /tmp/$TIME.pcap"
+              timeout 60 tshark -w /tmp/$TIME.pcap
+              echo "timeout reached. Uploading the package dump /tmp/$TIME.txt to S3"
+              aws s3 cp /tmp/$TIME.pcap s3://$BUCKETNAME/pcap/ --region $REGION && echo "Upload of /tmp/$TIME.pcap complete" && rm /tmp/$TIME.pcap && echo "Deletion of /tmp/$TIME.pcap complete" &
+            done
+            EOF
+            chmod +x /opt/networking/gwlb-pcap-package-dump.sh
+
+            pm2 start "/opt/networking/gwlb-geneve-package-dump.sh $REGION $BUCKETNAME $INSTANCEIP" -n geneve-package-dump
+            pm2 start "/opt/networking/gwlb-pcap-package-dump.sh $REGION $BUCKETNAME" -n pcap-package-dump
+            pm2 serve "/opt/networking/serve/" --port $HEALTHCHECKPORT --spa
+            pm2 save
+
+            aws elbv2 register-targets --target-group-arn ${GwlbTargetGroupArn} --targets Id=$INSTANCEID
+
+      IamInstanceProfile: !Sub ${GwlbPackageDumpInstanceProfile}
+      SecurityGroupIds: 
+      - !Sub ${GwlbPackageDumpSecurityGroup}
+      SubnetId: !Sub ${InstanceSubnet}
+      SourceDestCheck: false
+      Tags:
+      - Key: Name
+        Value: 'Package analyzer'
+
+
+Outputs:
+  SessionManager:
+    Value: !Sub https://console.aws.amazon.com/systems-manager/session-manager/${GwlbPackageDumpInstance}
+
+  S3BucketName:
+    Value: !Sub ${GwlbPackageDumpS3Bucket}
+
+  S3BucketLink:
+    Value: !Sub https://console.aws.amazon.com/s3/buckets/${GwlbPackageDumpS3Bucket}?region=${AWS::Region}
