@@ -16,6 +16,7 @@ Refer to [AWS CLI](https://aws.amazon.com/cli/) for details
 * [Delete GWLB Sample](gwlb/delete_gwlb_sample.md)
 * [Delete Target Group Sample](gwlb/delete_tg_sample.md)
 * [Amazon Linxu 2 iptables Sample](gwlb/configure_iptables_al2.md)
+* [Amazon Linux 2023 iptables Sample](gwlb/configure_iptables_al2023.md)
 
 ### **VPC Endpoint Service:**
 
